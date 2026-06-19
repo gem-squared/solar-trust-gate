@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar Trust Gate — 보험금 청구 심사</title>
+  <style>
+    :root {
+      --solar: #FF6B00;
+      --solar-light: #FFF3E8;
+      --allow: #16A34A;
+      --deny: #DC2626;
+      --pending: #D97706;
+      --bg: #F9FAFB;
+      --card: #FFFFFF;
+      --border: #E5E7EB;
+      --text: #111827;
+      --muted: #6B7280;
+      --risk-low: #16A34A;
+      --risk-mid: #D97706;
+      --risk-high: #DC2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header .logo { font-size: 20px; font-weight: 700; }
+    header .logo span { color: var(--solar); }
+    header .tagline { font-size: 13px; color: #9CA3AF; }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+
+    /* Scenario selector */
+    .scenario-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .scenario-bar label { font-size: 13px; color: var(--muted); align-self: center; font-weight: 600; }
+    .scenario-btn {
+      padding: 8px 18px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .scenario-btn:hover { border-color: var(--solar); background: var(--solar-light); }
+    .scenario-btn.active { border-color: var(--solar); background: var(--solar-light); color: var(--solar); }
+    .scenario-btn.jeongsang { border-color: var(--allow); }
+    .scenario-btn.jeongsang.active { background: #F0FDF4; color: var(--allow); border-color: var(--allow); }
+    .scenario-btn.hamjeong { border-color: var(--pending); }
+    .scenario-btn.hamjeong.active { background: #FFFBEB; color: var(--pending); border-color: var(--pending); }
+    .scenario-btn.aksseong { border-color: var(--deny); }
+    .scenario-btn.aksseong.active { background: #FEF2F2; color: var(--deny); border-color: var(--deny); }
+
+    /* Verify toggle */
+    .verify-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .verify-bar .toggle-label { font-size: 14px; font-weight: 600; }
+    .verify-bar .toggle-desc { font-size: 12px; color: var(--muted); }
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #9CA3AF;
+      border-radius: 26px;
+      transition: 0.2s;
+    }
+    .slider:before {
+      position: absolute; content: "";
+      height: 20px; width: 20px;
+      left: 3px; bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    input:checked + .slider { background: var(--solar); }
+    input:checked + .slider:before { transform: translateX(22px); }
+    .verify-badge {
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .verify-badge.on { background: var(--solar-light); color: var(--solar); }
+    .verify-badge.off { background: #F3F4F6; color: var(--muted); }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      background: white;
+      transition: all 0.2s;
+      margin-bottom: 20px;
+    }
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--solar); background: var(--solar-light); }
+    .upload-zone .upload-icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-zone .upload-text { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .upload-zone .upload-hint { font-size: 13px; color: var(--muted); }
+    .upload-zone.has-file { border-color: var(--allow); background: #F0FDF4; }
+    .upload-zone.has-file .upload-icon::after { content: "✓"; }
+
+    .process-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--solar);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+      margin-bottom: 24px;
+    }
+    .process-btn:hover:not(:disabled) { background: #E85D00; }
+    .process-btn:disabled { background: #9CA3AF; cursor: not-allowed; }
+
+    /* Pipeline steps */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .pipeline-step {
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1.5px solid var(--border);
+      background: white;
+      color: var(--muted);
+      position: relative;
+    }
+    .pipeline-step.active { border-color: var(--solar); color: var(--solar); background: var(--solar-light); }
+    .pipeline-step.done { border-color: var(--allow); color: var(--allow); background: #F0FDF4; }
+    .pipeline-step.fail { border-color: var(--deny); color: var(--deny); background: #FEF2F2; }
+    .pipeline-arrow { color: var(--muted); font-size: 14px; }
+
+    /* Cards */
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .badge {
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-solar { background: var(--solar-light); color: var(--solar); }
+    .badge-allow { background: #F0FDF4; color: var(--allow); }
+    .badge-deny { background: #FEF2F2; color: var(--deny); }
+    .badge-pending { background: #FFFBEB; color: var(--pending); }
+
+    /* Fact grid */
+    .fact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+    .fact-item { background: #F9FAFB; border-radius: 8px; padding: 10px 12px; }
+    .fact-key { font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+    .fact-value { font-size: 14px; font-weight: 500; word-break: break-all; }
+
+    /* Judgment block */
+    .judgment-verdict {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .judgment-reason { font-size: 14px; color: #374151; line-height: 1.6; }
+    .judgment-refs { margin-top: 12px; }
+    .judgment-refs .ref-chip {
+      display: inline-block;
+      background: #EFF6FF;
+      color: #1D4ED8;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      margin: 3px 4px 3px 0;
+    }
+
+    /* Risk meter */
+    .risk-meter {
+      margin: 12px 0;
+    }
+    .risk-meter-bar {
+      height: 10px;
+      background: #E5E7EB;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .risk-meter-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+    .risk-low .risk-meter-fill { background: var(--risk-low); }
+    .risk-mid .risk-meter-fill { background: var(--risk-mid); }
+    .risk-high .risk-meter-fill { background: var(--risk-high); }
+    .risk-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Gate results */
+    .gate-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .gate-row:last-child { border-bottom: none; }
+    .gate-layer { font-size: 13px; font-weight: 700; min-width: 28px; color: var(--muted); }
+    .gate-desc { font-size: 13px; flex: 1; }
+    .gate-verdict { font-size: 12px; font-weight: 700; }
+
+    /* Drift fingerprints */
+    .drift-chip {
+      display: inline-block;
+      background: #FEF2F2;
+      color: var(--deny);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      margin: 3px 4px 3px 0;
+      font-family: monospace;
+    }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 3px solid #E5E7EB;
+      border-top-color: var(--solar);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .pending-msg {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--pending);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 16px;
+      background: #FFFBEB;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+
+    .error-msg {
+      background: #FEF2F2;
+      color: var(--deny);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .blocked-msg {
+      background: #FEF2F2;
+      border: 2px solid var(--deny);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .blocked-msg .blocked-icon { font-size: 32px; margin-bottom: 8px; }
+    .blocked-msg .blocked-title { font-size: 18px; font-weight: 700; color: var(--deny); }
+    .blocked-msg .blocked-desc { font-size: 14px; color: #374151; margin-top: 6px; }
+
+    .hidden { display: none !important; }
+
+    input[type=file] { display: none; }
+
+    /* Duration badge */
+    .duration { font-size: 11px; color: var(--muted); }
+
+    /* TFC panel */
+    .tfc-rule {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .tfc-rule:last-child { border-bottom: none; }
+    .tfc-gate-badge {
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .tfc-gate-l1 { background: #EFF6FF; color: #1D4ED8; }
+    .tfc-gate-l2 { background: #F5F3FF; color: #6D28D9; }
+    .tfc-gate-hitl { background: #FFF3E8; color: var(--solar); }
+    .tfc-rule-desc { font-size: 13px; flex: 1; }
+    .tfc-provenance { font-size: 11px; color: var(--muted); margin-top: 2px; font-style: italic; }
+    .tfc-bound { font-size: 11px; color: var(--allow); margin-top: 2px; font-family: monospace; }
+
+    /* Evidence checks (per-인용근거 L2) */
+    .ev-check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .ev-check-row:last-child { border-bottom: none; }
+    .ev-check-row-fail {
+      background: #FEF2F2;
+      border-left: 3px solid var(--deny);
+      padding-left: 8px;
+      border-radius: 4px;
+      margin: 2px 0;
+    }
+    .ev-tag {
+      font-size: 14px;
+      font-weight: 900;
+      min-width: 22px;
+      flex-shrink: 0;
+    }
+    .ev-tag-grounded { color: var(--allow); }
+    .ev-tag-inferred { color: #1D4ED8; }
+    .ev-tag-extrapolated { color: var(--deny); }
+    .ev-tag-unknown { color: #92400E; }
+    .ev-check-body { flex: 1; }
+    .ev-check-ref { font-size: 13px; font-weight: 500; }
+    .ev-check-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .ev-anchor { font-size: 11px; color: #1D4ED8; margin-top: 2px; font-family: monospace; }
+    .ev-failure-header {
+      font-size: 12px; font-weight: 700; color: var(--deny);
+      margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+    }
+
+    /* HITL seed UI */
+    .hitl-card {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    .hitl-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #92400E;
+      margin-bottom: 4px;
+    }
+    .hitl-subtitle {
+      font-size: 12px;
+      color: #B45309;
+      margin-bottom: 14px;
+    }
+    .hitl-form { display: flex; flex-direction: column; gap: 10px; }
+    .hitl-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .hitl-input {
+      flex: 1;
+      min-width: 180px;
+      padding: 8px 12px;
+      border: 1px solid #FDE68A;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+    }
+    .hitl-btn {
+      padding: 8px 18px;
+      background: #F59E0B;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .hitl-btn:hover { background: #D97706; }
+    .hitl-reset-btn {
+      padding: 6px 14px;
+      background: white;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .hitl-added-rules { margin-top: 12px; }
+    .hitl-rule-chip {
+      display: inline-block;
+      background: white;
+      border: 1px solid #FDE68A;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 12px;
+      color: #92400E;
+      margin: 2px 4px 2px 0;
+    }
+    .hitl-hint {
+      font-size: 12px;
+      color: #B45309;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Solar <span>Trust Gate</span></div>
+    <div class="tagline">스스로 검증하는 Solar — 한국 보험금 청구 심사 데모</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Scenario selector -->
+  <div class="scenario-bar">
+    <label>데모 케이스:</label>
+    <button class="scenario-btn jeongsang" data-id="정상" onclick="loadScenario('정상', this)">✅ 정상 청구</button>
+    <button class="scenario-btn hamjeong" data-id="함정" onclick="loadScenario('함정', this)">⚠️ 함정 청구</button>
+    <button class="scenario-btn aksseong" data-id="악성" onclick="loadScenario('악성', this)">🚨 악성 청구</button>
+  </div>
+
+  <!-- Verify toggle -->
+  <div class="verify-bar">
+    <span class="toggle-label">자기검증</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="verifyToggle" checked onchange="updateVerifyBadge()">
+      <span class="slider"></span>
+    </label>
+    <span id="verifyBadge" class="verify-badge on">검증 ON</span>
+    <span class="toggle-desc" id="verifyDesc">L0→L1→F(Solar)→L2→L3 전체 파이프라인 실행</span>
+  </div>
+
+  <!-- Upload zone -->
+  <div class="upload-zone" id="uploadZone"
+       onclick="document.getElementById('pdfInput').click()"
+       ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+    <div class="upload-icon" id="uploadIcon">📄</div>
+    <div class="upload-text" id="uploadText">보험금 청구서 PDF 업로드</div>
+    <div class="upload-hint" id="uploadHint">클릭하거나 파일을 여기에 드롭하세요 (최대 10MB)</div>
+  </div>
+  <input type="file" id="pdfInput" accept=".pdf" onchange="onFileSelect(event)">
+
+  <!-- Submit button -->
+  <button class="process-btn" id="processBtn" onclick="processClaim()" disabled>
+    보험금 청구 심사 시작
+  </button>
+
+  <!-- Pipeline status -->
+  <div class="pipeline hidden" id="pipelineStatus">
+    <div class="pipeline-step" id="ps-classify">📋 분류</div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step" id="ps-tce">📜 TCE</div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step" id="ps-extract">🔍 추출(A)</div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step" id="ps-l1">L1</div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step" id="ps-f">F(Solar)</div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step" id="ps-l2">L2</div>
+  </div>
+
+  <!-- Pending spinner -->
+  <div class="pending-msg hidden" id="pendingMsg">
+    <div class="spinner"></div>
+    <span>Solar 심사 처리 중... (10~30초 소요)</span>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg hidden" id="errorMsg"></div>
+
+  <!-- Blocked result -->
+  <div class="blocked-msg hidden" id="blockedResult">
+    <div class="blocked-icon">🚫</div>
+    <div class="blocked-title">청구서 분류 차단</div>
+    <div class="blocked-desc" id="blockedDesc"></div>
+  </div>
+
+  <!-- Anchor A: Extracted facts -->
+  <div class="card hidden" id="anchorCard">
+    <div class="card-header">
+      <div class="card-title">추출 사실 (Anchor A)</div>
+      <span class="badge badge-solar">Upstage Document AI</span>
+    </div>
+    <div class="fact-grid" id="factGrid"></div>
+  </div>
+
+  <!-- TFC: Contract template bound to instance -->
+  <div class="card hidden" id="tfcCard">
+    <div class="card-header">
+      <div class="card-title">계약 (TFC — TPMN Format Contract)</div>
+      <span class="badge" id="tfcVersionBadge" style="background:#F5F3FF;color:#6D28D9;">TCE</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">
+      약관에서 태어난 규칙 — 카테고리 템플릿 + 인스턴스 바인딩. 규칙마다 약관 조항 출처.
+    </div>
+    <div id="tfcRules"></div>
+  </div>
+
+  <!-- Solar Judgment (F) -->
+  <div class="card hidden" id="judgmentCard">
+    <div class="card-header">
+      <div class="card-title">Solar 판정 결과 (F)</div>
+      <span class="badge badge-solar">Solar Pro 3</span>
+    </div>
+    <div class="judgment-verdict" id="judgmentVerdict"></div>
+    <div class="judgment-reason" id="judgmentReason"></div>
+    <div class="judgment-refs hidden" id="judgmentRefs">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">인용근거</div>
+      <div id="judgmentRefChips"></div>
+    </div>
+  </div>
+
+  <!-- Self-verification result -->
+  <div class="card hidden" id="verifyCard">
+    <div class="card-header">
+      <div class="card-title">자기검증 결과 (Solar L1/L2)</div>
+      <span class="badge" id="verifyModeBadge">검증 ON</span>
+    </div>
+
+    <!-- Risk score meter -->
+    <div class="risk-meter" id="riskMeterContainer">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:600;">리스크 점수</span>
+        <span style="font-size:18px;font-weight:900;" id="riskScoreLabel">—</span>
+      </div>
+      <div class="risk-meter-bar">
+        <div class="risk-meter-fill" id="riskMeterFill" style="width:0%"></div>
+      </div>
+      <div class="risk-label">
+        <span>낮음 (안전)</span>
+        <span>높음 (위험)</span>
+      </div>
+    </div>
+
+    <!-- Gate rows -->
+    <div id="gateRows" style="margin-top:14px;"></div>
+
+    <!-- Drift fingerprints -->
+    <div id="driftSection" class="hidden" style="margin-top:14px;">
+      <div style="font-size:12px;font-weight:600;color:var(--deny);margin-bottom:6px;">⚠️ 감지된 드리프트 패턴</div>
+      <div id="driftChips"></div>
+    </div>
+
+    <!-- Evidence refs -->
+    <div id="evidenceSection" style="margin-top:14px;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">근거 참조</div>
+      <div id="evidenceChips"></div>
+    </div>
+
+    <!-- Epistemic tag -->
+    <div id="epistemicSection" style="margin-top:10px;font-size:12px;color:var(--muted);">
+      인식론 태그: <span id="epistemicTag" style="font-weight:700;"></span>
+    </div>
+
+    <!-- Per-인용근거 evidence checks (L2 epistemic climax) -->
+    <div id="evidenceChecksSection" class="hidden" style="margin-top:16px;">
+      <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:8px;">
+        L2 인용근거 역추적 (근거 역추적 검증)
+      </div>
+      <div id="evidenceChecksRows"></div>
+    </div>
+  </div>
+
+  <!-- Duration -->
+  <div class="duration hidden" id="durationBadge" style="text-align:right;padding-bottom:24px;"></div>
+
+  <!-- HITL Seed: 4막 — template edit UI -->
+  <div class="hitl-card" id="hitlCard">
+    <div class="hitl-title">⚙️ 4막 — HITL 씨앗: 템플릿 편집 → 구조적 안정화</div>
+    <div class="hitl-subtitle">
+      TFC 템플릿에 규칙 한 줄 추가 → 재실행 → 카테고리 전체가 구조적으로 안정화됩니다.
+    </div>
+    <div class="hitl-form">
+      <div class="hitl-row">
+        <input class="hitl-input" id="hitlDesc" placeholder="규칙 내용 (예: 상급병실료 차액은 특약 가입증명서 첨부 시에만 보장)" />
+      </div>
+      <div class="hitl-row">
+        <input class="hitl-input" id="hitlProv" placeholder="약관 조항 (예: 약관 제17조 제4항)" style="flex:0.5;" />
+        <select id="hitlGate" style="padding:8px 12px;border:1px solid #FDE68A;border-radius:8px;font-size:13px;background:white;">
+          <option value="L2">L2 (인식론)</option>
+          <option value="L1">L1 (사전조건)</option>
+        </select>
+        <button class="hitl-btn" onclick="addHITLRule()">템플릿에 추가</button>
+        <button class="hitl-reset-btn" onclick="resetHITL()">초기화</button>
+      </div>
+    </div>
+    <div class="hitl-added-rules" id="hitlAddedRules" style="display:none;">
+      <div style="font-size:11px;font-weight:600;color:#92400E;margin-bottom:4px;">추가된 규칙:</div>
+      <div id="hitlRuleChips"></div>
+    </div>
+    <div class="hitl-hint" id="hitlHint">
+      💡 규칙 추가 후 함정 청구를 재실행하면, 이 규칙이 TFC에 포함되어 L2가 더 명시적으로 검증합니다.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let selectedFile = null;
+  let selectedScenarioB64 = null;
+  const scenarios = {};
+
+  // Load scenarios from server
+  fetch('/api/claim/scenarios')
+    .then(r => r.json())
+    .then(data => {
+      (data.scenarios || []).forEach(s => { scenarios[s.id] = s; });
+    })
+    .catch(() => {});
+
+  function updateVerifyBadge() {
+    const on = document.getElementById('verifyToggle').checked;
+    const badge = document.getElementById('verifyBadge');
+    const desc = document.getElementById('verifyDesc');
+    badge.textContent = on ? '검증 ON' : '검증 OFF';
+    badge.className = 'verify-badge ' + (on ? 'on' : 'off');
+    desc.textContent = on
+      ? 'L0→L1→F(Solar)→L2→L3 전체 파이프라인 실행'
+      : 'Solar F 판정만 실행 (게이트 없음) — 함정 케이스 통과 확인용';
+  }
+
+  function loadScenario(id, btn) {
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const s = scenarios[id];
+    if (!s || !s.pdf_b64) {
+      setStatus('서버에서 시나리오를 불러오는 중... 잠시 후 다시 시도하세요.', 'error');
+      return;
+    }
+    selectedScenarioB64 = s.pdf_b64;
+    selectedFile = null;
+    setUploadSuccess(s.name + '.pdf');
+    resetResults();
+  }
+
+  function onFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+    selectedScenarioB64 = null;
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    setUploadSuccess(file.name);
+    resetResults();
+  }
+
+  function setUploadSuccess(name) {
+    const zone = document.getElementById('uploadZone');
+    zone.classList.add('has-file');
+    document.getElementById('uploadIcon').textContent = '✅';
+    document.getElementById('uploadText').textContent = name;
+    document.getElementById('uploadHint').textContent = '다른 파일을 선택하려면 클릭';
+    document.getElementById('processBtn').disabled = false;
+  }
+
+  function onDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
+  function onDragLeave(e) { document.getElementById('uploadZone').classList.remove('dragover'); }
+  function onDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') {
+      selectedFile = file; selectedScenarioB64 = null;
+      setUploadSuccess(file.name);
+      resetResults();
+    }
+  }
+
+  function resetResults() {
+    stopPipelineAnimation();
+    ['anchorCard','tfcCard','judgmentCard','verifyCard','blockedResult','errorMsg','pendingMsg','durationBadge','pipelineStatus']
+      .forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById('driftSection').classList.add('hidden');
+    document.getElementById('evidenceChecksSection').classList.add('hidden');
+  }
+
+  function setStatus(msg, type) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function setPipelineStep(id, state) {
+    const el = document.getElementById('ps-' + id);
+    if (!el) return;
+    el.className = 'pipeline-step ' + state;
+  }
+
+  let _pipelineTimer = null;
+
+  function startPipelineAnimation(verify) {
+    const steps = verify
+      ? ['classify', 'tce', 'extract', 'l1', 'f', 'l2']
+      : ['classify', 'tce', 'extract', 'f'];
+    const delays = [0, 600, 1400, 2800, 4500, 6800]; // ms per step
+    const labels = {
+      classify: '📋 문서 분류 중...',
+      tce:      '📜 TCE — 계약 템플릿 바인딩 중...',
+      extract:  '🔍 정보 추출 중 (Anchor A)...',
+      l1:       'L1 — TFC 사전조건 검증 중 (Solar)...',
+      f:        'F — Solar 판정 중...',
+      l2:       'L2 — 근거 역추적 검증 중 (Solar)...',
+    };
+    let current = 0;
+    function advance() {
+      if (current > 0) setPipelineStep(steps[current - 1], 'done');
+      if (current < steps.length) {
+        setPipelineStep(steps[current], 'active');
+        document.getElementById('pendingMsg').querySelector('span').textContent =
+          labels[steps[current]] || 'Solar 처리 중...';
+        current++;
+        const nextDelay = current < delays.length ? delays[current] - delays[current - 1] : 2000;
+        _pipelineTimer = setTimeout(advance, nextDelay);
+      }
+    }
+    advance();
+  }
+
+  function stopPipelineAnimation() {
+    if (_pipelineTimer) { clearTimeout(_pipelineTimer); _pipelineTimer = null; }
+  }
+
+  async function processClaim() {
+    if (!selectedFile && !selectedScenarioB64) return;
+
+    resetResults();
+    document.getElementById('processBtn').disabled = true;
+    document.getElementById('pipelineStatus').classList.remove('hidden');
+    document.getElementById('pendingMsg').classList.remove('hidden');
+    ['classify','tce','extract','l1','f','l2'].forEach(s => setPipelineStep(s, ''));
+
+    const verify = document.getElementById('verifyToggle').checked;
+    const form = new FormData();
+
+    if (selectedFile) {
+      form.append('pdf', selectedFile);
+    } else {
+      // Decode base64 → Blob
+      const bytes = atob(selectedScenarioB64);
+      const buf = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) buf[i] = bytes.charCodeAt(i);
+      form.append('pdf', new Blob([buf], { type: 'application/pdf' }), 'claim.pdf');
+    }
+    form.append('verify', verify ? 'true' : 'false');
+
+    startPipelineAnimation(verify);
+
+    try {
+      const resp = await fetch('/api/claim/process', { method: 'POST', body: form });
+      const data = await resp.json();
+      stopPipelineAnimation();
+      document.getElementById('pendingMsg').classList.add('hidden');
+      document.getElementById('processBtn').disabled = false;
+
+      if (data.status === 'audit_pending') {
+        document.getElementById('errorMsg').textContent = '⏳ ' + (data.error || 'Solar 감사 처리 중 — 잠시 후 다시 시도하세요');
+        document.getElementById('errorMsg').classList.remove('hidden');
+        document.getElementById('errorMsg').style.background = '#FFFBEB';
+        document.getElementById('errorMsg').style.color = '#92400E';
+      } else if (data.status === 'blocked') {
+        setPipelineStep('classify', 'fail');
+        ['extract','l1','f','l2'].forEach(s => setPipelineStep(s, ''));
+        document.getElementById('blockedDesc').textContent =
+          `문서 유형: ${data.doc_class || '알 수 없음'} — ${data.reason || '보험금 청구서가 아닙니다'}`;
+        document.getElementById('blockedResult').classList.remove('hidden');
+      } else if (data.status === 'error') {
+        document.getElementById('errorMsg').textContent = data.error + ': ' + (data.detail || '');
+        document.getElementById('errorMsg').classList.remove('hidden');
+      } else {
+        renderResult(data, verify);
+      }
+
+      if (data.duration_ms) {
+        document.getElementById('durationBadge').textContent = `처리 시간: ${data.duration_ms}ms`;
+        document.getElementById('durationBadge').classList.remove('hidden');
+      }
+    } catch (err) {
+      stopPipelineAnimation();
+      document.getElementById('pendingMsg').classList.add('hidden');
+      document.getElementById('processBtn').disabled = false;
+      document.getElementById('errorMsg').textContent = '요청 오류: ' + err.message;
+      document.getElementById('errorMsg').classList.remove('hidden');
+    }
+  }
+
+  function renderResult(data, verify) {
+    setPipelineStep('classify', 'done');
+    setPipelineStep('tce', 'done');
+    setPipelineStep('extract', 'done');
+
+    // Anchor A
+    if (data.anchor_a) {
+      const grid = document.getElementById('factGrid');
+      grid.innerHTML = '';
+      const fields = ['피보험자명','진단코드','청구항목','청구금액','약관한도','약관조항ref','rider_claims','attached_docs'];
+      fields.forEach(k => {
+        if (data.anchor_a[k] === undefined) return;
+        const raw = data.anchor_a[k];
+        let v;
+        if (Array.isArray(raw)) {
+          v = raw.length ? raw.join(', ') : null;
+        } else {
+          v = raw !== null && raw !== '' ? String(raw) : null;
+        }
+        if (!v) return;
+        const el = document.createElement('div');
+        el.className = 'fact-item';
+        // Highlight rider_claims in orange if present (key for 2막 demo)
+        const style = k === 'rider_claims' ? 'color:var(--solar);font-weight:700;' : '';
+        el.innerHTML = `<div class="fact-key">${k}</div><div class="fact-value" style="${style}">${escHtml(v)}</div>`;
+        grid.appendChild(el);
+      });
+      document.getElementById('anchorCard').classList.remove('hidden');
+    }
+
+    // TFC panel
+    if (data.gate_result && data.gate_result.tfc) {
+      renderTFC(data.gate_result.tfc);
+    }
+
+    // Judgment B
+    if (data.judgment_b) {
+      const b = data.judgment_b;
+      const verdict = b['판정'] || '';
+      const el = document.getElementById('judgmentVerdict');
+      el.textContent = verdict;
+      el.style.color = verdict.includes('승인') ? 'var(--allow)' : verdict.includes('거절') ? 'var(--deny)' : 'var(--pending)';
+      document.getElementById('judgmentReason').textContent = b['사유'] || '';
+
+      const refs = b['인용근거'] || [];
+      if (refs.length) {
+        const chips = document.getElementById('judgmentRefChips');
+        chips.innerHTML = refs.map(r => `<span class="ref-chip">${escHtml(r)}</span>`).join('');
+        document.getElementById('judgmentRefs').classList.remove('hidden');
+      }
+      setPipelineStep('f', 'done');
+      document.getElementById('judgmentCard').classList.remove('hidden');
+    }
+
+    // Gate result
+    if (data.gate_result) {
+      const g = data.gate_result;
+      const verifyBadge = document.getElementById('verifyModeBadge');
+      const isOn = g.verify_mode === 'on';
+      verifyBadge.textContent = isOn ? '검증 ON' : '검증 OFF';
+      verifyBadge.className = 'badge ' + (isOn ? 'badge-solar' : 'badge-pending');
+
+      // Pipeline step colouring
+      if (isOn) {
+        const l1state = g.l1_verdict === 'ALLOW' ? 'done'
+                      : g.l1_verdict === 'DENY'  ? 'fail'
+                      : g.l1_verdict === 'SKIPPED' ? 'fail'
+                      : g.l1_verdict === 'ERROR' ? 'fail' : 'done';
+        const l2state = g.l2_verdict === 'SUCCESS' ? 'done'
+                      : g.l2_verdict === 'FAILURE' ? 'fail'
+                      : g.l2_verdict === 'SKIPPED'  ? 'fail'
+                      : g.l2_verdict === 'ERROR' ? 'fail' : 'done';
+        setPipelineStep('l1', l1state);
+        setPipelineStep('l2', l2state);
+      } else {
+        setPipelineStep('l1', '');
+        setPipelineStep('l2', '');
+      }
+
+      // Risk meter
+      const score = g.risk_score || 0;
+      const scoreLabel = document.getElementById('riskScoreLabel');
+      const fill = document.getElementById('riskMeterFill');
+      const container = document.getElementById('riskMeterContainer');
+      scoreLabel.textContent = score;
+      fill.style.width = score + '%';
+      container.className = 'risk-meter ' + (score < 35 ? 'risk-low' : score < 65 ? 'risk-mid' : 'risk-high');
+
+      // Gate rows
+      const rows = document.getElementById('gateRows');
+      rows.innerHTML = '';
+      if (!isOn) {
+        rows.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:12px 0;">
+          ⚪ 검증 게이트 비활성화 — L1/L2가 실행되지 않았습니다.<br>
+          <span style="font-size:12px;">검증 토글을 ON으로 설정하면 L0→L1→F→L2 전체 파이프라인이 실행됩니다.</span>
+        </div>`;
+      } else {
+        // L0 catch (악성 케이스: l1_verdict=SKIPPED means L0 blocked)
+        if (g.l1_verdict === 'SKIPPED') {
+          addGateRow(rows, 'L0', 'L0 경계 게이트 — 인그레스 차단', 'DENY', 'l0');
+          addGateRow(rows, 'L1', 'P-check — L0에 의해 건너뜀', 'SKIPPED', 'pcheck');
+          addGateRow(rows, 'L2', 'O-check — L0에 의해 건너뜀', 'SKIPPED', 'ocheck');
+        } else {
+          addGateRow(rows, 'L1', 'P-check (사전 조건 검증)', g.l1_verdict || '—', 'pcheck');
+          addGateRow(rows, 'L2', 'O-check (사후 조건 검증)', g.l2_verdict || '—', 'ocheck');
+        }
+      }
+
+      // Drift
+      const driftEl = document.getElementById('driftSection');
+      if (g.drift_fingerprints && g.drift_fingerprints.length) {
+        document.getElementById('driftChips').innerHTML =
+          g.drift_fingerprints.map(d => `<span class="drift-chip">${escHtml(d)}</span>`).join('');
+        driftEl.classList.remove('hidden');
+      } else {
+        driftEl.classList.add('hidden');
+      }
+
+      // Evidence refs
+      const evEl = document.getElementById('evidenceSection');
+      if (g.evidence_refs && g.evidence_refs.length) {
+        document.getElementById('evidenceChips').innerHTML =
+          g.evidence_refs.map(r => `<span class="ref-chip">${escHtml(r)}</span>`).join('');
+        evEl.style.display = '';
+      } else {
+        evEl.style.display = isOn ? '' : 'none';
+        document.getElementById('evidenceChips').innerHTML =
+          `<span style="font-size:12px;color:var(--muted);">없음</span>`;
+      }
+
+      // Epistemic
+      const epEl = document.getElementById('epistemicSection');
+      if (g.epistemic_tag) {
+        document.getElementById('epistemicTag').textContent = g.epistemic_tag;
+        epEl.style.display = '';
+      } else {
+        epEl.style.display = 'none';
+      }
+
+      // Per-인용근거 evidence checks (L2 epistemic climax)
+      const ecSection = document.getElementById('evidenceChecksSection');
+      const ecRows = document.getElementById('evidenceChecksRows');
+      if (isOn && g.evidence_checks && g.evidence_checks.length) {
+        ecRows.innerHTML = '';
+        const hasFailRow = g.evidence_checks.some(ec => ec.tag === '⊬' || ec.tag === '⊥');
+        if (hasFailRow && g.l2_verdict === 'FAILURE') {
+          const hdr = document.createElement('div');
+          hdr.className = 'ev-failure-header';
+          hdr.innerHTML = `✗ FAILURE 근거 — L2가 탐지한 미검증 인용근거:`;
+          ecRows.appendChild(hdr);
+        }
+        g.evidence_checks.forEach(ec => {
+          const isFail = ec.tag === '⊬' || ec.tag === '⊥';
+          const tagClass = {
+            '⊢': 'ev-tag-grounded',
+            '⊨': 'ev-tag-inferred',
+            '⊬': 'ev-tag-extrapolated',
+            '⊥': 'ev-tag-unknown',
+          }[ec.tag] || 'ev-tag-unknown';
+          const row = document.createElement('div');
+          row.className = 'ev-check-row' + (isFail ? ' ev-check-row-fail' : '');
+          row.innerHTML = `
+            <span class="ev-tag ${tagClass}">${ec.tag || '?'}</span>
+            <div class="ev-check-body">
+              <div class="ev-check-ref">${escHtml(ec['인용근거'] || ec.inyong_gun_geo || '')}</div>
+              ${ec.anchor_field ? `<div class="ev-anchor">앵커: ${escHtml(ec.anchor_field)}</div>` : ''}
+              ${ec.tfc_rule ? `<div class="ev-anchor" style="color:#6D28D9;">TFC: ${escHtml(ec.tfc_rule)}</div>` : ''}
+              ${ec.note ? `<div class="ev-check-note">${escHtml(ec.note)}</div>` : ''}
+            </div>
+          `;
+          ecRows.appendChild(row);
+        });
+        ecSection.classList.remove('hidden');
+      } else {
+        ecSection.classList.add('hidden');
+      }
+
+      document.getElementById('verifyCard').classList.remove('hidden');
+    }
+  }
+
+  function addGateRow(container, layer, desc, verdict, type) {
+    const row = document.createElement('div');
+    row.className = 'gate-row';
+    const isPass = verdict === 'ALLOW' || verdict === 'SUCCESS';
+    const isFail = verdict === 'DENY' || verdict === 'FAILURE';
+    const isSkip = verdict === 'SKIPPED';
+    const color = isFail ? 'var(--deny)'
+                : isSkip ? 'var(--muted)'
+                : isPass ? 'var(--allow)'
+                : 'var(--muted)';
+    const icon  = isFail ? '✗' : isSkip ? '—' : isPass ? '✓' : '?';
+    row.innerHTML = `
+      <span class="gate-layer" style="color:${color}">${layer}</span>
+      <span class="gate-desc">${desc}</span>
+      <span class="gate-verdict" style="color:${color}">${icon} ${verdict}</span>
+    `;
+    container.appendChild(row);
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── TFC rendering ──────────────────────────────────────────────
+  function renderTFC(tfc) {
+    const card = document.getElementById('tfcCard');
+    const rulesEl = document.getElementById('tfcRules');
+    const badge = document.getElementById('tfcVersionBadge');
+    badge.textContent = tfc.version || 'TFC';
+    rulesEl.innerHTML = '';
+    (tfc.rules || []).forEach(r => {
+      if (!r.active) return;
+      const isHITL = r.id && r.id.startsWith('HITL');
+      const gateClass = isHITL ? 'tfc-gate-hitl' : (r.gate === 'L1' ? 'tfc-gate-l1' : 'tfc-gate-l2');
+      const gateLabel = isHITL ? 'HITL' : (r.gate || 'L2');
+      const row = document.createElement('div');
+      row.className = 'tfc-rule';
+      row.innerHTML = `
+        <span class="tfc-gate-badge ${gateClass}">${gateLabel}</span>
+        <div>
+          <div class="tfc-rule-desc">${escHtml(r.description || '')}</div>
+          <div class="tfc-provenance">${escHtml(r.provenance || '')}</div>
+          ${r.bound_value ? `<div class="tfc-bound">↳ ${escHtml(r.bound_value)}</div>` : ''}
+        </div>
+      `;
+      rulesEl.appendChild(row);
+    });
+    card.classList.remove('hidden');
+  }
+
+  // ── HITL seed functions ─────────────────────────────────────────
+  let hitlRules = [];
+
+  async function addHITLRule() {
+    const desc = document.getElementById('hitlDesc').value.trim();
+    const prov = document.getElementById('hitlProv').value.trim();
+    const gate = document.getElementById('hitlGate').value;
+    if (!desc) { alert('규칙 내용을 입력하세요.'); return; }
+    try {
+      const resp = await fetch('/api/claim/hitl/add-rule', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({description: desc, provenance: prov || '(약관 조항 미지정)', gate}),
+      });
+      const data = await resp.json();
+      if (data.added) {
+        hitlRules.push(data.added);
+        document.getElementById('hitlDesc').value = '';
+        document.getElementById('hitlProv').value = '';
+        renderHITLRules();
+        document.getElementById('hitlHint').textContent =
+          `✅ 규칙 ${data.added.id} 추가됨. 함정 청구를 재실행하면 이 규칙이 TFC에 포함됩니다.`;
+      }
+    } catch(e) {
+      alert('규칙 추가 실패: ' + e.message);
+    }
+  }
+
+  async function resetHITL() {
+    await fetch('/api/claim/hitl/reset', {method:'POST'});
+    hitlRules = [];
+    renderHITLRules();
+    document.getElementById('hitlHint').textContent =
+      '💡 규칙 추가 후 함정 청구를 재실행하면, 이 규칙이 TFC에 포함되어 L2가 더 명시적으로 검증합니다.';
+  }
+
+  function renderHITLRules() {
+    const el = document.getElementById('hitlAddedRules');
+    const chips = document.getElementById('hitlRuleChips');
+    if (!hitlRules.length) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    chips.innerHTML = hitlRules.map(r =>
+      `<span class="hitl-rule-chip">${escHtml(r.id)}: ${escHtml(r.description)}</span>`
+    ).join('');
+  }
+
+  updateVerifyBadge();
+</script>
+</body>
+</html>

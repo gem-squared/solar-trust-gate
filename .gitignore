@@ -1,0 +1,84 @@
+# ───── OS ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ───── IDE ────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ───── Archive folders — anywhere in the tree ─────────────────────
+archive/
+archive/**
+**/archive/
+**/archive/**
+
+# ───── Environment / secrets ──────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ───── Dependencies ───────────────────────────────────────────────
+node_modules/
+venv/
+__pycache__/
+
+
+# ───── Build artifacts ────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.exe
+loan-agent
+gem2-crafter
+gem2-crafter-linux
+gem2-techex
+gem2-techex-linux
+solar-trust-gate
+solar-trust-gate-linux
+bin/
+*.txt
+
+# ───── TPMN / dev-state (.gem-squared) ────────────────────────────
+# Aggressive default: ignore everything under .gem-squared/ EXCEPT the
+# work-plan directory (the pitch + decomposition story is part of the repo).
+.gem-squared/*
+!.gem-squared/work-plan/
+!.gem-squared/work-plan/**
+!.gem-squared/ce-registry/
+!.gem-squared/ce-registry/**
+
+
+CLAUDE.md
+
+README-internal.md
+Doc/
+Doc/*
+.gem-squared/
+.gem-squared/*
+.claude/
+.claude/*
+
+
+
+# Covered by the wildcard above; listed for grep-discoverability:
+#   .gem-squared/truth-logs/
+#   .gem-squared/verify-work-logs/
+#   .gem-squared/evidences/
+#   .gem-squared/workspace/
+#   .gem-squared/sessions/
+#   .gem-squared/ce-registry/
+#   .gem-squared/external-skills/
+#   .gem-squared/gem2-core-skills/
+#   .gem-squared/archive/
+
+# ───── Dev-only spike artifacts ───────────────────────────────────
+console/static/_spike/
+
+# ───── Catch-all for ad-hoc dev scratch ───────────────────────────
+Docs/Workflow-candidates
+
+# ───── Large binary assets (pitch decks, keynotes) ────────────────
+Docs/pitch/*.key
+Docs/pitch/*.pdf

@@ -1,0 +1,7 @@
+[
+  {
+    "id": "InsClaims-PolicyDoc-§4",
+    "stage": "claim-02-policy-verification",
+    "text": "Policy verification confirms ACTIVE status within coverage window AND member identity match. Proof: policy_verified=true ⇒ policy_product_code is non-empty AND policy_start_date ≤ incident_date ≤ policy_expiry_date."
+  }
+]

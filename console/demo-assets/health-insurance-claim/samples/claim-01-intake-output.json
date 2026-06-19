@@ -1,0 +1,17 @@
+{
+  "claim_reference_draft": "DRAFT-20260518-00001",
+  "policy_no": "HIC-2026-12345",
+  "claimant_name": "Ah Beng Tan",
+  "id_document_type": "nric",
+  "id_document_no": "S1234567D",
+  "date_of_birth": "1985-03-22",
+  "claimant_relationship": "self",
+  "claim_type": "hospitalisation",
+  "incident_date": "2026-05-15",
+  "claim_date": "2026-05-18",
+  "claim_amount_requested": 8500.00,
+  "intake_accepted": true,
+  "rejection_reason": null,
+  "missing_documents": [],
+  "intake_timestamp": "2026-05-18T10:00:00+08:00"
+}

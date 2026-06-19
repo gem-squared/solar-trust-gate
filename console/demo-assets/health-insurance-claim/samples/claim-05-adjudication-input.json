@@ -1,0 +1,19 @@
+{
+  "claim_reference_draft": "DRAFT-20260518-00001",
+  "policy_no": "HIC-2026-12345",
+  "claimant_name": "Ah Beng Tan",
+  "claim_type": "hospitalisation",
+  "claim_amount_requested": 8500.00,
+  "claimable_ceiling": 8500.00,
+  "rps_benchmark": 9000.00,
+  "non_panel_flag": false,
+  "policy_product_code": "COMP-HEALTH-GOLD",
+  "benefit_schedule": {
+    "deductible_annual": 500,
+    "deductible_utilised": 0,
+    "co_payment_pct": 10,
+    "co_insurance_pct": 0,
+    "co_insurance_cap": 0,
+    "non_panel_reimbursement_pct": 80
+  }
+}

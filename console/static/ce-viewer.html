@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CE Viewer · GEM²-Crafter</title>
+  <style>
+    :root {
+      --bg: #0a0f1e;
+      --bg-card: #0f172a;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --accent: #06b6d4;
+      --ok: #10b981;
+      --err: #ef4444;
+      --border: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text); padding: 24px; line-height: 1.5;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    header { margin-bottom: 20px; position: relative; }
+    /* Contract Viewer panel styles */
+    .cv-meta-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .cv-pill {
+      display: inline-flex; align-items: center;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 999px; padding: 3px 10px;
+      font-size: 0.72rem; color: var(--text-dim);
+    }
+    .cv-h { margin: 14px 0 6px; font-size: 0.85rem; color: var(--accent); letter-spacing: 0.5px; text-transform: uppercase; }
+    .cv-h-sub { color: var(--text-dim); font-weight: normal; text-transform: none; letter-spacing: normal; font-size: 0.92em; }
+    .cv-block {
+      margin: 0; padding: 10px 12px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 4px;
+      font-size: 0.78rem; font-family: ui-monospace, monospace;
+      max-height: 280px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+      color: #cbd5e1;
+    }
+    .cv-list { margin: 0; padding-left: 22px; }
+    .cv-list li { font-size: 0.82rem; color: #cbd5e1; margin: 2px 0; }
+    .brand { color: var(--text-dim); font-size: 0.9rem; margin: 0 0 6px; }
+    .brand a { color: var(--accent); text-decoration: none; }
+    h1 { margin: 0 0 8px; font-size: 1.6rem; color: var(--accent); }
+    h2 { margin: 12px 0 8px; font-size: 1.05rem; color: var(--text); }
+    .sub { color: var(--text-dim); font-size: 0.9rem; margin: 0; word-break: break-all; }
+    code { background: var(--bg-card); padding: 2px 6px; border-radius: 4px; color: var(--accent); font-size: 0.85em; }
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 6px; padding: 16px; margin-bottom: 16px;
+    }
+    textarea {
+      width: 100%; min-height: 200px; resize: vertical;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+      padding: 10px; color: var(--text); font-family: ui-monospace, monospace; font-size: 0.85rem;
+    }
+    input[type=password] {
+      width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text); font-family: inherit;
+    }
+    button {
+      padding: 10px 18px; background: var(--accent); color: var(--bg);
+      border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.95rem;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+    .status { font-size: 0.85rem; color: var(--text-dim); }
+    .status.ok  { color: var(--ok); }
+    .status.err { color: var(--err); }
+
+    /* Run CE progress bar — indeterminate stripe that pulses while a run is in flight */
+    .cev-run-progress {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .cev-run-progress.hidden { display: none; }
+    .cev-run-progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(148,163,184,0.10);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .cev-run-progress-fill {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 32%;
+      background: linear-gradient(90deg,
+        rgba(234,88,12,0.10) 0%,
+        rgba(234,88,12,0.95) 50%,
+        rgba(234,88,12,0.10) 100%);
+      border-radius: 999px;
+      box-shadow: 0 0 16px rgba(234,88,12,0.55);
+      animation: cev-run-slide 1.4s ease-in-out infinite;
+    }
+    @keyframes cev-run-slide {
+      0%   { left: -32%; }
+      50%  { left: 50%; }
+      100% { left: 100%; }
+    }
+    .cev-run-progress-label {
+      font-size: 0.78rem;
+      color: var(--accent);
+      font-family: ui-monospace, monospace;
+      letter-spacing: 0.5px;
+    }
+    .output {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+      padding: 12px; min-height: 100px; max-height: 500px; overflow: auto;
+      font-family: ui-monospace, monospace; font-size: 0.85rem; white-space: pre-wrap;
+    }
+    .meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-dim); margin-top: 10px; }
+
+    /* WP-AO-62 — audit-chain toggle + L1/L2 verdict panels */
+    .cev-audit-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; color: var(--text-dim); cursor: pointer;
+      margin-left: 8px; user-select: none;
+    }
+    .cev-audit-toggle input { accent-color: var(--accent); }
+
+    .cev-panel { margin-bottom: 16px; border-radius: 6px; overflow: hidden; }
+    .cev-panel.hidden { display: none; }
+    .cev-panel-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px; background: var(--bg-card); border: 1px solid var(--border);
+      border-bottom: 3px solid transparent;
+    }
+    .cev-panel-l1 .cev-panel-header { border-bottom-color: var(--accent); }
+    .cev-panel-l2 .cev-panel-header { border-bottom-color: var(--accent); }
+    .cev-panel.ok    .cev-panel-header { border-bottom-color: var(--ok); }
+    .cev-panel.deny  .cev-panel-header { border-bottom-color: var(--err); }
+    .cev-panel.halt  .cev-panel-header { border-bottom-color: #f59e0b; }
+    .cev-panel-title { font-size: 0.95rem; font-weight: 600; color: var(--text); flex-shrink: 0; }
+    .cev-verdict-pill {
+      padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700;
+      font-family: ui-monospace, monospace; letter-spacing: 0.02em;
+    }
+    .cev-verdict-pill.ok   { background: rgba(16,185,129,0.15); color: var(--ok); }
+    .cev-verdict-pill.deny { background: rgba(239,68,68,0.15);  color: var(--err); }
+    .cev-verdict-pill.halt { background: rgba(245,158,11,0.18); color: #fbbf24; }
+    .cev-panel-meta { font-size: 0.78rem; color: var(--text-dim); margin-left: auto; font-family: ui-monospace, monospace; }
+    .cev-panel-body {
+      padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-top: 0;
+    }
+    .cev-reasons summary { cursor: pointer; color: var(--text-dim); font-size: 0.85rem; }
+    .cev-reasons[open] summary { color: var(--text); }
+    .cev-reasons ul { margin: 8px 0 0; padding-left: 18px; font-size: 0.82rem; color: var(--text-dim); }
+    .cev-reasons li { margin: 4px 0; line-height: 1.4; }
+    .cev-evidence summary { cursor: pointer; color: #fbbf24; font-size: 0.82rem; margin-top: 10px; }
+    .cev-evidence ul { margin: 6px 0 0; padding-left: 18px; font-size: 0.78rem; color: var(--text-dim); }
+    .cev-evidence li { margin: 3px 0; font-family: ui-monospace, monospace; }
+
+    .cev-tool-row {
+      font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--text-dim);
+      padding: 4px 0; border-bottom: 1px dashed rgba(100,116,139,0.15);
+    }
+    .cev-tool-row code { color: var(--text); background: rgba(255,167,38,0.08); }
+    .cev-totals { font-size: 0.78rem; color: var(--text-dim); font-family: ui-monospace, monospace; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="brand"><a href="/">GEM²-Crafter</a> · Contract-Executor Viewer</p>
+      <h1 id="title">CE Viewer</h1>
+      <p class="sub">Endpoint: <code id="api-display">—</code></p>
+      <button id="contract-viewer-btn" type="button"
+              style="position:absolute;top:18px;right:60px;padding:6px 14px;background:#10b981;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.85rem;">
+        Contract viewer
+      </button>
+    </header>
+
+    <!-- Contract panel — hidden by default; toggled by #contract-viewer-btn -->
+    <section id="contract-panel" class="card" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2 style="margin:0;">📜 Contract (TPMN 5-block)</h2>
+        <span id="contract-meta" style="font-size:0.78em;color:#94a3b8;"></span>
+      </div>
+      <div id="contract-body" style="margin-top:10px;">
+        <p class="status" style="font-size:0.85em;">Loading contract…</p>
+      </div>
+    </section>
+
+    <div id="auth-gate" class="card" style="display:none;">
+      <h2>Access required</h2>
+      <p class="status">Enter the access key to run this CE.</p>
+      <div class="row">
+        <input id="auth-key-input" type="password" placeholder="Access key" autocomplete="off" />
+        <button id="auth-submit-btn">Sign in</button>
+        <span id="auth-error" class="status err" style="display:none;">Invalid key</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>
+        Input I (JSON)
+        <span id="sample-edited-badge" style="display:none;font-size:0.75em;color:#facc15;font-weight:normal;margin-left:8px;">● edited — differs from standard</span>
+      </h2>
+      <textarea id="i-input" placeholder='{"example": "your input here"}'></textarea>
+
+      <details style="margin-top:8px;">
+        <summary style="cursor:pointer;font-size:0.85em;color:#94a3b8;">Standard correction data (read-only baseline set at CE creation)</summary>
+        <pre id="standard-sample" style="margin-top:6px;padding:8px;background:#0b1220;border-radius:4px;font-size:0.78em;max-height:200px;overflow:auto;color:#cbd5e1;">// load…</pre>
+      </details>
+
+      <!-- Reference data textarea removed 2026-05-19 — CESpec.ReferenceData
+           is auto-prefetched server-side from SQLite into the CE LLM call;
+           the textarea was unused for the demo. Hidden input kept so any
+           JS that reads its value doesn't crash. -->
+      <input type="hidden" id="ref-input" value="{}">
+
+      <div class="row">
+        <button id="submit-btn">Run CE</button>
+        <button id="save-sample-btn" class="ghost" title="Save current input — used by canvas Run and next viewer load">Save</button>
+        <button id="reset-sample-btn" class="ghost" title="Revert Input I back to the frozen standard correction data">Reset</button>
+        <button id="curl-btn" class="ghost">Copy curl</button>
+        <input type="checkbox" id="cev-audit-toggle" checked hidden>
+        <span id="status" class="status">Ready.</span>
+      </div>
+
+      <!-- Run progress indicator — appears under the button row while Run CE is in flight -->
+      <div id="cev-run-progress" class="cev-run-progress hidden" role="progressbar"
+           aria-label="Run CE in progress">
+        <div class="cev-run-progress-bar">
+          <div class="cev-run-progress-fill"></div>
+        </div>
+        <div class="cev-run-progress-label" id="cev-run-progress-label">Running…</div>
+      </div>
+    </div>
+
+    <!-- WP-AO-62: L1 P-check panel (hidden unless audit chain enabled) -->
+    <section id="cev-l1-panel" class="cev-panel cev-panel-l1 hidden">
+      <div class="cev-panel-header">
+        <span class="cev-panel-title">🛡 L1 · P-check</span>
+        <span class="cev-verdict-pill" id="cev-l1-verdict">—</span>
+        <span class="cev-panel-meta" id="cev-l1-meta"></span>
+      </div>
+      <div class="cev-panel-body">
+        <details class="cev-reasons" id="cev-l1-reasons" open>
+          <summary>Reasons</summary>
+          <ul id="cev-l1-reasons-list"></ul>
+        </details>
+        <details class="cev-evidence" id="cev-l1-evidence">
+          <summary>Ledger evidence</summary>
+          <ul id="cev-l1-evidence-list"></ul>
+        </details>
+      </div>
+    </section>
+
+    <div class="card">
+      <h2>Output (F-block)</h2>
+      <pre id="output" class="output">// CE output will appear here.</pre>
+      <div id="meta" class="meta"></div>
+      <div id="cev-tool-calls"></div>
+      <div class="cev-totals" id="cev-totals"></div>
+    </div>
+
+    <!-- WP-AO-62: L2 O-check panel (hidden unless audit chain enabled) -->
+    <section id="cev-l2-panel" class="cev-panel cev-panel-l2 hidden">
+      <div class="cev-panel-header">
+        <span class="cev-panel-title">🛡 L2 · O-check</span>
+        <span class="cev-verdict-pill" id="cev-l2-verdict">—</span>
+        <span class="cev-panel-meta" id="cev-l2-meta"></span>
+      </div>
+      <div class="cev-panel-body">
+        <details class="cev-reasons" id="cev-l2-reasons" open>
+          <summary>Reasons</summary>
+          <ul id="cev-l2-reasons-list"></ul>
+        </details>
+        <details class="cev-evidence" id="cev-l2-evidence">
+          <summary>Compliance + ledger evidence</summary>
+          <ul id="cev-l2-evidence-list"></ul>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const KEY_STORAGE = "aio-key";
+    const params = new URLSearchParams(window.location.search);
+
+    const apiEndpoint = params.get("api") || "";
+    const titleParam  = params.get("title") || "CE Viewer";
+    const sampleParam = params.get("sample") || "";
+    const keyParam    = params.get("key") || "";
+
+    document.getElementById("title").textContent = titleParam;
+    document.getElementById("api-display").textContent = apiEndpoint || "(missing ?api=)";
+
+    // Pre-fill sample input if provided. sample may be plain JSON, URL-encoded
+    // JSON (already decoded by URLSearchParams), or base64-encoded JSON.
+    function decodeSample(s) {
+      if (!s) return "";
+      // Try as JSON first (already-decoded path)
+      try { JSON.parse(s); return s; } catch {}
+      // Try base64 then JSON
+      try {
+        const decoded = atob(s);
+        JSON.parse(decoded);
+        return decoded;
+      } catch {}
+      return s;
+    }
+    const decodedSample = decodeSample(sampleParam);
+    if (decodedSample) {
+      try {
+        const pretty = JSON.stringify(JSON.parse(decodedSample), null, 2);
+        document.getElementById("i-input").value = pretty;
+      } catch {
+        document.getElementById("i-input").value = decodedSample;
+      }
+    }
+
+    // Key: URL param takes priority (one-click demo flow), then sessionStorage,
+    // then localStorage. URL-supplied key is mirrored to both stores so subsequent
+    // visits without ?key= still work.
+    if (keyParam) {
+      sessionStorage.setItem(KEY_STORAGE, keyParam);
+      localStorage.setItem(KEY_STORAGE, keyParam);
+    }
+    function getKey() {
+      return sessionStorage.getItem(KEY_STORAGE) || localStorage.getItem(KEY_STORAGE) || "";
+    }
+
+    async function tryAuth(k) {
+      try {
+        const res = await fetch("/api/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: k })
+        });
+        if (res.ok) {
+          sessionStorage.setItem(KEY_STORAGE, k);
+          localStorage.setItem(KEY_STORAGE, k);
+          return true;
+        }
+      } catch {}
+      return false;
+    }
+
+    function showGate() { document.getElementById("auth-gate").style.display = "block"; }
+    function hideGate() { document.getElementById("auth-gate").style.display = "none"; }
+    function checkAuth() { if (!getKey()) showGate(); else hideGate(); }
+
+    function setStatus(msg, cls) {
+      const el = document.getElementById("status");
+      el.textContent = msg;
+      el.className = "status" + (cls ? " " + cls : "");
+    }
+
+    function parseJSON(id) {
+      const raw = document.getElementById(id).value.trim();
+      if (!raw) return null;
+      try { return JSON.parse(raw); }
+      catch (e) { throw new Error(id + ": invalid JSON — " + e.message); }
+    }
+
+    // WP-AO-62 — derive /audited endpoint from the F-only endpoint.
+    // apiEndpoint format: "/ce/{workflow}/{stage}/" → "/ce/{workflow}/{stage}/audited"
+    function auditedEndpointOf(api) {
+      if (!api) return "";
+      return api.endsWith("/") ? api + "audited" : api + "/audited";
+    }
+
+    function clearAuditPanels() {
+      ["cev-l1-panel","cev-l2-panel"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.add("hidden"); el.classList.remove("ok","deny","halt"); }
+      });
+      ["cev-l1-reasons-list","cev-l2-reasons-list","cev-l1-evidence-list","cev-l2-evidence-list"]
+        .forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ""; });
+      ["cev-l1-verdict","cev-l2-verdict"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = "—"; el.className = "cev-verdict-pill"; }
+      });
+      ["cev-l1-meta","cev-l2-meta"].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = "";
+      });
+      const tools = document.getElementById("cev-tool-calls");
+      if (tools) tools.innerHTML = "";
+      const totals = document.getElementById("cev-totals");
+      if (totals) totals.textContent = "";
+    }
+
+    // verdictBucket returns the CSS class for a verdict + score.
+    function verdictBucket(verdict, score, threshold) {
+      const ok = verdict === "ALLOW" || verdict === "SUCCESS";
+      const passing = ok && (score == null || score >= (threshold || 0));
+      if (passing) return "ok";
+      return "deny";
+    }
+
+    function renderGatePanel(slot /* "l1"|"l2" */, gate, audited) {
+      if (!gate) return;
+      const panel = document.getElementById("cev-" + slot + "-panel");
+      const pill  = document.getElementById("cev-" + slot + "-verdict");
+      const meta  = document.getElementById("cev-" + slot + "-meta");
+      const reasonsList = document.getElementById("cev-" + slot + "-reasons-list");
+      panel.classList.remove("hidden");
+      let verdict = gate.verdict || (gate.error ? "ERROR" : "—");
+      let cls = "halt";
+      if (verdict === "ALLOW" || verdict === "SUCCESS") cls = "ok";
+      else if (verdict === "DENY" || verdict === "FAILURE") cls = "deny";
+      panel.classList.remove("ok","deny","halt");
+      panel.classList.add(cls);
+      pill.className = "cev-verdict-pill " + cls;
+      pill.textContent = verdict + (gate.score != null ? " · " + gate.score : "");
+      meta.textContent = "t=" + (gate.latency_ms || 0) + "ms";
+      if (Array.isArray(gate.reasons) && gate.reasons.length) {
+        reasonsList.innerHTML = gate.reasons
+          .map(r => "<li>" + escapeHTML(r) + "</li>")
+          .join("");
+      } else if (gate.error) {
+        reasonsList.innerHTML = "<li style='color:var(--err)'>⚠ " + escapeHTML(gate.error) + "</li>";
+      } else {
+        reasonsList.innerHTML = "<li style='color:var(--text-dim)'>(no reasons returned)</li>";
+      }
+    }
+
+    function escapeHTML(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function renderToolCalls(calls) {
+      const container = document.getElementById("cev-tool-calls");
+      if (!container) return;
+      if (!Array.isArray(calls) || calls.length === 0) { container.innerHTML = ""; return; }
+      container.innerHTML = "<h2 style='font-size:0.9rem;margin-top:14px;color:var(--text-dim)'>Tool calls</h2>";
+      calls.forEach(c => {
+        const row = document.createElement("div");
+        row.className = "cev-tool-row";
+        const args = c.args == null ? "" : (typeof c.args === "string" ? c.args : JSON.stringify(c.args));
+        const argsShort = args.length > 80 ? args.slice(0,80) + "…" : args;
+        const summary = c.summary || (c.error ? "error" : "ok");
+        const lat = c.latency_ms != null ? " · " + c.latency_ms + "ms" : "";
+        row.innerHTML = "🔧 <code>" + escapeHTML(c.tool || "?") + "(" + escapeHTML(argsShort) + ")</code> → " +
+                        escapeHTML(summary) + lat +
+                        (c.error ? " <span style='color:var(--err)'>⚠ " + escapeHTML(c.error) + "</span>" : "");
+        container.appendChild(row);
+      });
+    }
+
+    async function runCE() {
+      if (!apiEndpoint) { setStatus("Missing ?api= in URL.", "err"); return; }
+      const key = getKey();
+      if (!key) { showGate(); setStatus("Sign in above first.", "err"); return; }
+      let i, ref;
+      try { i = parseJSON("i-input"); ref = parseJSON("ref-input"); }
+      catch (e) { setStatus(e.message, "err"); return; }
+      if (i === null) { setStatus("Input I is required.", "err"); return; }
+
+      const auditOn = !!document.getElementById("cev-audit-toggle")?.checked;
+
+      const btn = document.getElementById("submit-btn");
+      btn.disabled = true;
+      clearAuditPanels();
+      setStatus(auditOn ? "Running L1 → F → L2..." : "Calling CE (F-only)...", "");
+      showRunProgress(auditOn ? "L1 P-check → F → L2 O-check…" : "F executing…");
+      document.getElementById("output").textContent = "// waiting on Vultr LLM...";
+      document.getElementById("meta").innerHTML = "";
+
+      const url = auditOn ? auditedEndpointOf(apiEndpoint) : apiEndpoint;
+      const t0 = performance.now();
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Access-Key": key },
+          body: JSON.stringify({ i: i, reference_data: ref })
+        });
+        const text = await res.text();
+        const dt = (performance.now() - t0).toFixed(0);
+        let json = null;
+        try { json = JSON.parse(text); } catch {}
+        if (!res.ok) {
+          setStatus("HTTP " + res.status + " (" + dt + "ms)", "err");
+          document.getElementById("output").textContent = json ? JSON.stringify(json, null, 2) : text;
+          return;
+        }
+        if (auditOn && json && (json.l1 || json.l2 || json.status)) {
+          renderAuditedResponse(json, dt);
+        } else if (json) {
+          // F-only legacy path
+          document.getElementById("output").textContent =
+            json.output != null ? JSON.stringify(json.output, null, 2) :
+            (json ? JSON.stringify(json, null, 2) : text);
+          if (json.status === "ok") { setStatus("OK · " + dt + "ms", "ok"); renderMeta(json); }
+          else if (json.status)     { setStatus("status=" + json.status + " · " + dt + "ms", "err"); renderMeta(json); }
+          else                      { setStatus("Done · " + dt + "ms", "ok"); }
+        } else {
+          document.getElementById("output").textContent = text;
+          setStatus("Done · " + dt + "ms", "ok");
+        }
+      } catch (e) {
+        setStatus("Request failed: " + e.message, "err");
+        document.getElementById("output").textContent = "// " + e.message;
+      } finally {
+        btn.disabled = false;
+        hideRunProgress();
+      }
+    }
+
+    function showRunProgress(label) {
+      const el = document.getElementById("cev-run-progress");
+      const lbl = document.getElementById("cev-run-progress-label");
+      if (!el) return;
+      if (lbl && label) lbl.textContent = label;
+      el.classList.remove("hidden");
+    }
+    function hideRunProgress() {
+      const el = document.getElementById("cev-run-progress");
+      if (el) el.classList.add("hidden");
+    }
+
+    function renderAuditedResponse(json, totalMs) {
+      // L1 panel
+      if (json.l1) renderGatePanel("l1", json.l1, json);
+      // F output
+      if (json.output != null) {
+        document.getElementById("output").textContent = JSON.stringify(json.output, null, 2);
+      } else if (json.raw_output) {
+        document.getElementById("output").textContent = "// raw_output (schema_mismatch):\n" + json.raw_output;
+      } else {
+        document.getElementById("output").textContent = "// (no output — halted at L1 or CE error)";
+      }
+      // Tool calls
+      renderToolCalls(json.tool_calls || []);
+      // L2 panel
+      if (json.l2) renderGatePanel("l2", json.l2, json);
+      // Totals
+      const d = json.durations || {};
+      document.getElementById("cev-totals").textContent =
+        "L1=" + (d.l1_ms || 0) + "ms · " +
+        "exec=" + (d.exec_ms || 0) + "ms · " +
+        "L2=" + (d.l2_ms || 0) + "ms · " +
+        "total=" + (json.total_duration_ms || totalMs) + "ms";
+      // Status line
+      const statusMap = {
+        ok:           ["✓ Approved (L1 ALLOW · F · L2 SUCCESS)", "ok"],
+        halted_l1:    ["⚠ Halted at L1 — input rejected", "err"],
+        ce_error:     ["⚠ CE error during F", "err"],
+        schema_mismatch: ["⚠ Schema mismatch — see raw output", "err"],
+        halted_l2:    ["⚠ Halted at L2 — output rejected", "err"],
+      };
+      const [text, cls] = statusMap[json.status] || ["status=" + (json.status || "?"), "err"];
+      setStatus(text + " · " + totalMs + "ms", cls);
+      // Render meta
+      renderMeta(json);
+    }
+
+    function renderMeta(json) {
+      const parts = [];
+      if (json.ce_slug)     parts.push("<span><strong>slug:</strong> " + json.ce_slug + "</span>");
+      if (json.vultr_model) parts.push("<span><strong>model:</strong> " + json.vultr_model + "</span>");
+      if (json.total_duration_ms != null) parts.push("<span><strong>total:</strong> " + json.total_duration_ms + "ms</span>");
+      else if (json.duration_ms != null)  parts.push("<span><strong>duration:</strong> " + json.duration_ms + "ms</span>");
+      document.getElementById("meta").innerHTML = parts.join("");
+    }
+
+    function copyCurl() {
+      const key = getKey() || "<YOUR_ACCESS_KEY>";
+      let i, ref;
+      try { i = parseJSON("i-input"); ref = parseJSON("ref-input"); }
+      catch (e) { setStatus(e.message, "err"); return; }
+      const body = JSON.stringify({ i: i, reference_data: ref });
+      const cmd = "curl -X POST '" + apiEndpoint + "' \\\n  -H 'X-Access-Key: " + key + "' \\\n  -H 'Content-Type: application/json' \\\n  -d '" + body.replace(/'/g, "'\\''") + "'";
+      navigator.clipboard.writeText(cmd).then(
+        () => setStatus("curl command copied.", "ok"),
+        () => setStatus("clipboard blocked.", "err")
+      );
+    }
+
+    // WP-AO-67 — parse {workflow, stage} from apiEndpoint ('/ce/<wf>/<stage>/').
+    function parseCESlug() {
+      if (!apiEndpoint) return null;
+      const m = apiEndpoint.match(/\/ce\/([^\/]+)\/([^\/]+)\/?$/);
+      return m ? { wf: m[1], stage: m[2] } : null;
+    }
+
+    // WP-AO-67 — on page load (after auth), fetch the last successful
+    // F-execution output for this CE and pre-fill the output pane.
+    async function loadLastRun() {
+      const slug = parseCESlug();
+      const key = getKey();
+      if (!slug || !key) return;
+      try {
+        const res = await fetch(`/api/ce/${slug.wf}/${slug.stage}/last-run`, {
+          headers: { "X-Access-Key": key }
+        });
+        if (!res.ok) return;
+        const rec = await res.json();
+        if (rec && rec.output != null) {
+          document.getElementById("output").textContent = JSON.stringify(rec.output, null, 2);
+          const meta = document.getElementById("meta");
+          if (meta) meta.textContent = "Last execution: " + (rec.timestamp || "?") + (rec.run_id ? " · run=" + rec.run_id : "");
+        }
+      } catch (e) { /* silent — judge can still Run CE */ }
+    }
+
+    // WP-AO-67 follow-up — fetch standard + current samples from the registry
+    // so the viewer always shows the SAVED value (not just the URL ?sample=).
+    // Standard = frozen baseline shown read-only; current = editable input.
+    async function loadSamples() {
+      const slug = parseCESlug();
+      const key = getKey();
+      if (!slug || !key) return;
+      try {
+        const res = await fetch(`/api/ce/${slug.wf}/${slug.stage}/sample`, {
+          headers: { "X-Access-Key": key }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const stdEl = document.getElementById("standard-sample");
+        const inputEl = document.getElementById("i-input");
+        const badge = document.getElementById("sample-edited-badge");
+        if (stdEl) stdEl.textContent = data.original_sample_i || data.sample_i || "// (no baseline yet)";
+        if (inputEl && data.sample_i) {
+          inputEl.value = data.sample_i;
+        }
+        if (badge) badge.style.display = data.is_edited ? "inline" : "none";
+      } catch (e) { /* silent */ }
+    }
+
+    // WP-AO-67 — Save the current input textarea as the CE's persistent
+    // default SampleI. Judge edits the input, clicks Save → next viewer
+    // load pre-fills with their value.
+    async function saveSample() {
+      const slug = parseCESlug();
+      const key = getKey();
+      if (!slug) { setStatus("No CE slug parsed from URL", "err"); return; }
+      if (!key) { showGate(); return; }
+      const raw = (document.getElementById("i-input").value || "").trim();
+      if (!raw) { setStatus("Nothing to save — input is empty", "err"); return; }
+      let parsed;
+      try { parsed = JSON.parse(raw); }
+      catch (e) { setStatus("Save aborted: input is not valid JSON (" + e.message + ")", "err"); return; }
+      const btn = document.getElementById("save-sample-btn");
+      btn.disabled = true; btn.textContent = "Saving…";
+      try {
+        const res = await fetch(`/api/ce/${slug.wf}/${slug.stage}/sample`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Access-Key": key },
+          body: JSON.stringify({ i: parsed })
+        });
+        const text = await res.text();
+        let json = null; try { json = JSON.parse(text); } catch {}
+        if (!res.ok) {
+          setStatus("Save failed: HTTP " + res.status + (json && json.detail ? " · " + json.detail : ""), "err");
+          return;
+        }
+        // Pretty-print the saved value back into the textarea.
+        if (json && json.sample_i) {
+          document.getElementById("i-input").value = json.sample_i;
+        }
+        // Refresh the "standard correction data" pane against the embedded
+        // canonical the server just confirmed — keeps Reset pointing at the
+        // true baseline.
+        const stdEl = document.getElementById("standard-sample");
+        if (stdEl && json && json.original_sample_i) stdEl.textContent = json.original_sample_i;
+        // Use the server's is_edited flag rather than string-comparing
+        // (avoids whitespace/key-order mismatches).
+        const badge = document.getElementById("sample-edited-badge");
+        if (badge) badge.style.display = (json && json.is_edited) ? "inline" : "none";
+        setStatus("✓ Saved — next workflow Run will use this input. (" + (json && json.saved_at ? json.saved_at : "") + ")", "ok");
+      } catch (e) {
+        setStatus("Save failed: " + e.message, "err");
+      } finally {
+        btn.disabled = false; btn.textContent = "Save";
+      }
+    }
+
+    // WP-AO-67 follow-up — Reset button: restore Input I to OriginalSampleI.
+    async function resetSample() {
+      const slug = parseCESlug();
+      const key = getKey();
+      if (!slug || !key) return;
+      const btn = document.getElementById("reset-sample-btn");
+      btn.disabled = true; btn.textContent = "Resetting…";
+      try {
+        const res = await fetch(`/api/ce/${slug.wf}/${slug.stage}/sample/reset`, {
+          method: "POST",
+          headers: { "X-Access-Key": key }
+        });
+        const text = await res.text();
+        let json = null; try { json = JSON.parse(text); } catch {}
+        if (!res.ok) { setStatus("Reset failed: HTTP " + res.status + (json && json.detail ? " · " + json.detail : ""), "err"); return; }
+        if (json && json.sample_i) document.getElementById("i-input").value = json.sample_i;
+        const badge = document.getElementById("sample-edited-badge");
+        if (badge) badge.style.display = "none";
+        setStatus("✓ Reset to standard correction data.", "ok");
+      } catch (e) { setStatus("Reset failed: " + e.message, "err"); }
+      finally { btn.disabled = false; btn.textContent = "Reset"; }
+    }
+
+    // ── Contract Viewer button — toggles the contract panel + fetches CESpec ──
+    let contractLoaded = false;
+    function escContract(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function renderContract(spec) {
+      const fmtVal = (v) => {
+        if (v == null) return "<em>—</em>";
+        if (typeof v === "string") return "<pre class='cv-block'>" + escContract(v) + "</pre>";
+        return "<pre class='cv-block'>" + escContract(JSON.stringify(v, null, 2)) + "</pre>";
+      };
+      const fmtList = (arr) => {
+        if (!arr || !arr.length) return "<em>(none)</em>";
+        return "<ul class='cv-list'>" + arr.map((s) => "<li>" + escContract(s) + "</li>").join("") + "</ul>";
+      };
+      return `
+        <div class='cv-meta-row'>
+          <span class='cv-pill'>Trust gates: L0=${spec.trust_gate_l0 ?? "—"} · L1=${spec.trust_gate_l1 ?? "—"} · L2=${spec.trust_gate_l2 ?? "—"} · L3=${spec.trust_gate_l3 ?? "—"}</span>
+          <span class='cv-pill'>Model: ${escContract(spec.vultr_model || "default")}</span>
+          <span class='cv-pill'>Agent: ${escContract(spec.agent_role || "—")}</span>
+          <span class='cv-pill'>Type: ${escContract(spec.stage_type || "—")}</span>
+        </div>
+        <h3 class='cv-h'>A &nbsp;<span class='cv-h-sub'>(input schema)</span></h3>
+        ${fmtVal(spec.a)}
+        <h3 class='cv-h'>P_pre &nbsp;<span class='cv-h-sub'>(${(spec.p_pre || []).length} preconditions)</span></h3>
+        ${fmtList(spec.p_pre)}
+        <h3 class='cv-h'>F &nbsp;<span class='cv-h-sub'>(contract body / CE system prompt)</span></h3>
+        ${fmtVal(spec.f_block)}
+        <h3 class='cv-h'>B &nbsp;<span class='cv-h-sub'>(output schema)</span></h3>
+        ${fmtVal(spec.b)}
+        <h3 class='cv-h'>P_post &nbsp;<span class='cv-h-sub'>(${(spec.p_post || []).length} postconditions)</span></h3>
+        ${fmtList(spec.p_post)}
+      `;
+    }
+    async function toggleContract() {
+      const panel = document.getElementById("contract-panel");
+      if (!panel) return;
+      const slug = parseCESlug();
+      const key = getKey();
+      if (!slug || !key) return;
+      if (panel.style.display !== "none" && contractLoaded) {
+        panel.style.display = "none";
+        return;
+      }
+      panel.style.display = "block";
+      if (contractLoaded) return;
+      const body = document.getElementById("contract-body");
+      const meta = document.getElementById("contract-meta");
+      body.innerHTML = "<p class='status' style='font-size:0.85em;'>Loading contract…</p>";
+      try {
+        const res = await fetch(`/api/workflow/ce-contract?slug=${encodeURIComponent(slug.wf + "/" + slug.stage)}`, {
+          headers: { "X-Access-Key": key }
+        });
+        if (!res.ok) {
+          body.innerHTML = "<p class='status err' style='font-size:0.85em;'>Failed to load contract: HTTP " + res.status + "</p>";
+          return;
+        }
+        const spec = await res.json();
+        if (meta) meta.textContent = (spec.contract_title || "") + " · " + (spec.workflow_slug || "") + "/" + (spec.stage_slug || "");
+        body.innerHTML = renderContract(spec);
+        contractLoaded = true;
+      } catch (e) {
+        body.innerHTML = "<p class='status err' style='font-size:0.85em;'>Load error: " + escContract(e.message) + "</p>";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      checkAuth();
+      document.getElementById("submit-btn").addEventListener("click", runCE);
+      document.getElementById("curl-btn").addEventListener("click", copyCurl);
+      const saveBtn = document.getElementById("save-sample-btn");
+      if (saveBtn) saveBtn.addEventListener("click", saveSample);
+      const resetBtn = document.getElementById("reset-sample-btn");
+      if (resetBtn) resetBtn.addEventListener("click", resetSample);
+      const contractBtn = document.getElementById("contract-viewer-btn");
+      if (contractBtn) contractBtn.addEventListener("click", toggleContract);
+      const authInput = document.getElementById("auth-key-input");
+      const authBtn   = document.getElementById("auth-submit-btn");
+      const authErr   = document.getElementById("auth-error");
+      async function submitAuth() {
+        const k = authInput.value.trim();
+        if (!k) return;
+        authBtn.disabled = true; authBtn.textContent = "Verifying...";
+        authErr.style.display = "none";
+        const ok = await tryAuth(k);
+        authBtn.disabled = false; authBtn.textContent = "Sign in";
+        if (ok) { hideGate(); setStatus("Signed in. Click Run CE.", "ok"); loadLastRun(); loadSamples(); }
+        else    { authErr.style.display = "inline"; }
+      }
+      if (authBtn)  authBtn.addEventListener("click", submitAuth);
+      if (authInput) authInput.addEventListener("keydown", e => { if (e.key === "Enter") submitAuth(); });
+      if (getKey()) { loadLastRun(); loadSamples(); }
+    });
+  </script>
+</body>
+</html>

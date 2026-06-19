@@ -1,0 +1,2 @@
+policy_no,claim_type,benefit_year,claim_reference_no,net_payable,status,posted_at
+HIC-2026-67890,outpatient,2025,CLM-2025-0000050,150.00,paid,2025-08-12T14:00:00+08:00

@@ -1,0 +1,18 @@
+{
+  "policy_no": "HIC-2026-12345",
+  "policy_holder": "Ah Beng Tan",
+  "claimant_name": "Ah Beng Tan",
+  "claimant_relationship": "self",
+  "id_document_type": "nric",
+  "id_document_no": "S1234567D",
+  "date_of_birth": "1985-03-22",
+  "claim_date": "2026-05-18",
+  "incident_date": "2026-05-15",
+  "claim_type": "hospitalisation",
+  "provider_name": "Mount Elizabeth Hospital",
+  "provider_registration": "MEH-2024-001",
+  "claim_amount_requested": 8500.00,
+  "supporting_documents": ["medical_bill", "discharge_summary", "specialist_memo"],
+  "claimant_contact_email": "ahbeng.tan@example.sg",
+  "claimant_contact_phone": "+6591234567"
+}

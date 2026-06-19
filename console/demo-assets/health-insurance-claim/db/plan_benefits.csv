@@ -1,0 +1,13 @@
+policy_product_code,claim_type,covered,waiting_period_days,annual_limit,per_claim_limit,lifetime_limit,non_panel_reimbursement_pct,deductible_annual,co_payment_pct,co_insurance_pct,co_insurance_cap
+COMP-HEALTH-GOLD,hospitalisation,1,30,100000,50000,1000000,80,500,10,0,0
+COMP-HEALTH-GOLD,surgical,1,30,80000,40000,1000000,80,500,10,0,0
+COMP-HEALTH-GOLD,outpatient,1,30,5000,500,1000000,80,0,10,0,0
+COMP-HEALTH-GOLD,maternity,1,270,15000,15000,1000000,80,0,10,0,0
+COMP-HEALTH-GOLD,dental,1,0,2000,500,1000000,80,0,10,0,0
+COMP-HEALTH-GOLD,emergency,1,0,10000,10000,1000000,80,0,0,0,0
+COMP-HEALTH-GOLD,vision,1,0,1500,500,1000000,80,0,10,0,0
+COMP-HEALTH-GOLD,mental_health,1,0,5000,1000,1000000,80,0,10,0,0
+COMP-HEALTH-SILVER,hospitalisation,1,60,50000,30000,500000,70,1000,15,0,0
+COMP-HEALTH-SILVER,outpatient,1,30,3000,300,500000,70,0,15,0,0
+COMP-HEALTH-BRONZE,hospitalisation,1,90,30000,20000,300000,60,1500,20,0,0
+COMP-HEALTH-BRONZE,outpatient,1,60,2000,200,300000,60,0,20,0,0

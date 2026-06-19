@@ -1,0 +1,7 @@
+[
+  {
+    "id": "InsClaims-PolicyDoc-§7",
+    "stage": "claim-04-medical-review",
+    "text": "Medical review confirms necessity, valid codes, and no exclusions. Proof: medical_review_passed=true ⇒ medical_necessity_confirmed=true AND pre_auth_verified=true AND exclusions_triggered=[]."
+  }
+]

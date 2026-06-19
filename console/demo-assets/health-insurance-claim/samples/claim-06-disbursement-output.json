@@ -1,0 +1,17 @@
+{
+  "claim_reference_no": "CLM-2026-0000123",
+  "settlement_ref": "SETT-20260518-00001",
+  "policy_no": "HIC-2026-12345",
+  "claimant_name": "Ah Beng Tan",
+  "claim_type": "hospitalisation",
+  "disbursement_status": "disbursed",
+  "net_payable": 7200.00,
+  "claimant_liability": 1300.00,
+  "payment_mode": "direct_credit",
+  "payee_name": "Ah Beng Tan",
+  "masked_bank_account_no": "****7890",
+  "disbursement_date": "2026-05-21",
+  "incident_date": "2026-05-15",
+  "remarks": "Direct credit T+3; payee matches claimant; conservation 7200+1300=8500 verified.",
+  "processing_timestamp": "2026-05-18T10:05:00+08:00"
+}

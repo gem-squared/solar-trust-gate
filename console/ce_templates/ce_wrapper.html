@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.ContractTitle}} — CE</title>
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --bg-card: #111827;
+      --bg-input: #1a2236;
+      --border: #1e293b;
+      --text: #e2e8f0;
+      --text-dim: #64748b;
+      --accent: #06b6d4;
+      --accent-dim: #0e7490;
+      --green: #22c55e;
+      --red: #ef4444;
+      --radius: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    header { margin-bottom: 24px; }
+    .brand {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .brand a { color: var(--accent); text-decoration: none; }
+    h1 {
+      font-size: 1.6rem;
+      margin: 4px 0 12px;
+      color: var(--text);
+    }
+    .sub {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .sub code {
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+      font-size: 0.8rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .card h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+    .schema {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      white-space: pre-wrap;
+      overflow-x: auto;
+      max-height: 180px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      color: var(--text);
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      outline: none;
+    }
+    textarea:focus { border-color: var(--accent); }
+    .row { display: flex; gap: 12px; margin-top: 16px; align-items: center; flex-wrap: wrap; }
+    button {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-family: inherit;
+    }
+    button:hover:not(:disabled) { opacity: 0.85; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.ghost {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--border);
+    }
+    button.ghost:hover { border-color: var(--accent); }
+    .status {
+      flex: 1;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .status.ok { color: var(--green); }
+    .status.err { color: var(--red); }
+    pre.output {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+      white-space: pre-wrap;
+      overflow-x: auto;
+      min-height: 240px;
+      max-height: 600px;
+      margin-top: 16px;
+    }
+    .meta {
+      display: flex;
+      gap: 16px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .meta span strong { color: var(--text); }
+    .verdict-ok { color: var(--green); font-weight: 700; }
+    .verdict-bad { color: var(--red); font-weight: 700; }
+    .help-banner {
+      background: rgba(6, 182, 212, 0.08);
+      border-left: 3px solid var(--accent);
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin: 16px 0;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .help-banner code {
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+    .help-banner.warn {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: var(--red);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="brand"><a href="/">GEM²-Crafter</a> · Contract-Executor wrapper</p>
+      <h1>{{.ContractTitle}}</h1>
+      <p class="sub">
+        Model: <code>{{.VultrModel}}</code> · CE slug: <code>{{.ProjectSlug}}/{{.StageSlug}}</code> · API endpoint: <code>{{.APIEndpoint}}</code>
+      </p>
+    </header>
+
+    <div id="auth-gate" class="card" style="display:none; margin-bottom:16px;">
+      <h2>Access required</h2>
+      <p style="color:var(--text-dim); margin-top:0;">Enter your access key to test this Contract-Executor. The key is shared with the main console — once entered here, it persists for both.</p>
+      <div class="row" style="align-items:center;">
+        <input id="auth-key-input" type="password" placeholder="Access key" autocomplete="off" style="flex:1; padding:10px; background:var(--bg); border:1px solid #1f2937; border-radius:4px; color:var(--text); font-family:inherit;" />
+        <button id="auth-submit-btn">Sign in</button>
+        <span id="auth-error" class="status err" style="display:none;">Invalid key</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Input type A</h2>
+        <pre class="schema">{{.ASchema}}</pre>
+      </div>
+      <div class="card">
+        <h2>Output type B</h2>
+        <pre class="schema">{{.BSchema}}</pre>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h2>Input I (JSON)</h2>
+      <textarea id="i-input" placeholder='{"example": "your input here"}'>{{.SampleI}}</textarea>
+
+      <h2 style="margin-top:16px;">Reference data (JSON, optional)</h2>
+      <textarea id="ref-input" placeholder='{"POLICY-001": "policy text..."}' style="min-height:120px;">{}</textarea>
+
+      <div class="row">
+        <button id="submit-btn">Run CE</button>
+        <button id="curl-btn" class="ghost">Copy curl</button>
+        <span id="status" class="status">Ready.</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h2>Output</h2>
+      <pre id="output" class="output">// CE output will appear here.</pre>
+      <div class="meta" id="meta"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_ENDPOINT = "{{.APIEndpoint}}";
+    const KEY_STORAGE  = "aio-key";
+
+    // Read from sessionStorage (same-tab) OR localStorage (cross-tab). The main
+    // console writes to both; a CE page opened in a new tab inherits the key
+    // from localStorage. Both stores are cleared by the lock button.
+    function getKey() { return sessionStorage.getItem(KEY_STORAGE) || localStorage.getItem(KEY_STORAGE) || ""; }
+
+    async function tryAuth(key) {
+      try {
+        const res = await fetch("/api/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key })
+        });
+        if (res.ok) {
+          sessionStorage.setItem(KEY_STORAGE, key);
+          localStorage.setItem(KEY_STORAGE, key);
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    function showAuthGate() { document.getElementById("auth-gate").style.display = "block"; }
+    function hideAuthGate() { document.getElementById("auth-gate").style.display = "none"; }
+
+    function checkAuth() {
+      if (!getKey()) { showAuthGate(); }
+      else            { hideAuthGate();  }
+    }
+
+    function setStatus(msg, cls) {
+      const el = document.getElementById("status");
+      el.textContent = msg;
+      el.className = "status" + (cls ? " " + cls : "");
+    }
+
+    function parseJSONField(id) {
+      const raw = document.getElementById(id).value.trim();
+      if (!raw) return null;
+      try { return JSON.parse(raw); }
+      catch (e) { throw new Error(id + ": invalid JSON — " + e.message); }
+    }
+
+    async function runCE() {
+      const key = getKey();
+      if (!key) { showAuthGate(); setStatus("Sign in above first.", "err"); return; }
+
+      let i, ref;
+      try {
+        i   = parseJSONField("i-input");
+        ref = parseJSONField("ref-input");
+      } catch (e) {
+        setStatus(e.message, "err");
+        return;
+      }
+      if (i === null) { setStatus("Input I is required.", "err"); return; }
+
+      const btn = document.getElementById("submit-btn");
+      btn.disabled = true;
+      setStatus("Calling CE...", "");
+      document.getElementById("output").textContent = "// waiting on Vultr LLM...";
+      document.getElementById("meta").innerHTML = "";
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Access-Key": key },
+          body: JSON.stringify({ i: i, reference_data: ref })
+        });
+        const text = await res.text();
+        const dt = (performance.now() - t0).toFixed(0);
+        let json = null;
+        try { json = JSON.parse(text); } catch {}
+        document.getElementById("output").textContent = json ? JSON.stringify(json, null, 2) : text;
+
+        if (!res.ok) {
+          setStatus("HTTP " + res.status + " (" + dt + "ms)", "err");
+        } else if (json && json.status === "ok") {
+          setStatus("OK · " + dt + "ms", "ok");
+          renderMeta(json);
+        } else if (json && json.status) {
+          setStatus("status=" + json.status + " · " + dt + "ms", "err");
+          renderMeta(json);
+        } else {
+          setStatus("Done · " + dt + "ms", "ok");
+        }
+      } catch (e) {
+        setStatus("Request failed: " + e.message, "err");
+        document.getElementById("output").textContent = "// " + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderMeta(json) {
+      const meta = document.getElementById("meta");
+      const parts = [];
+      if (json.ce_slug)     parts.push("<span><strong>slug:</strong> " + json.ce_slug + "</span>");
+      if (json.vultr_model) parts.push("<span><strong>model:</strong> " + json.vultr_model + "</span>");
+      if (json.duration_ms != null) parts.push("<span><strong>duration:</strong> " + json.duration_ms + "ms</span>");
+      meta.innerHTML = parts.join("");
+    }
+
+    function copyCurl() {
+      const key = getKey() || "<YOUR_ACCESS_KEY>";
+      let i, ref;
+      try {
+        i   = parseJSONField("i-input");
+        ref = parseJSONField("ref-input");
+      } catch (e) {
+        setStatus(e.message, "err");
+        return;
+      }
+      const body = JSON.stringify({ i: i, reference_data: ref });
+      const cmd = "curl -X POST '" + API_ENDPOINT + "' \\\n  -H 'X-Access-Key: " + key + "' \\\n  -H 'Content-Type: application/json' \\\n  -d '" + body.replace(/'/g, "'\\''") + "'";
+      navigator.clipboard.writeText(cmd).then(
+        () => setStatus("curl command copied to clipboard.", "ok"),
+        () => setStatus("clipboard blocked — see console.", "err")
+      );
+      console.log(cmd);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      checkAuth();
+      document.getElementById("submit-btn").addEventListener("click", runCE);
+      document.getElementById("curl-btn").addEventListener("click", copyCurl);
+
+      const authInput  = document.getElementById("auth-key-input");
+      const authBtn    = document.getElementById("auth-submit-btn");
+      const authError  = document.getElementById("auth-error");
+      async function submitAuth() {
+        const k = authInput.value.trim();
+        if (!k) return;
+        authBtn.disabled = true;
+        authBtn.textContent = "Verifying...";
+        authError.style.display = "none";
+        const ok = await tryAuth(k);
+        authBtn.disabled = false;
+        authBtn.textContent = "Sign in";
+        if (ok) {
+          hideAuthGate();
+          setStatus("Signed in. Click Run CE.", "ok");
+        } else {
+          authError.style.display = "inline";
+        }
+      }
+      if (authBtn)  authBtn.addEventListener("click", submitAuth);
+      if (authInput) authInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitAuth(); });
+    });
+  </script>
+</body>
+</html>

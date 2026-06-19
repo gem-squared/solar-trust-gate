@@ -1,0 +1,16 @@
+{
+  "claim_reference_draft": "DRAFT-20260518-00001",
+  "policy_no": "HIC-2026-12345",
+  "claimant_name": "Ah Beng Tan",
+  "claim_type": "hospitalisation",
+  "claim_amount_requested": 8500.00,
+  "adjudication_base": 8500.00,
+  "deductible_applied_this_claim": 500.00,
+  "co_pay_amount": 800.00,
+  "co_insurance_amount": 0.00,
+  "net_payable": 7200.00,
+  "claimant_liability": 1300.00,
+  "adjudication_status": "approved",
+  "adjudication_notes": "GOLD plan; in-panel; deductible 500, co-pay 10%, no co-insurance.",
+  "adjudication_timestamp": "2026-05-18T10:04:00+08:00"
+}

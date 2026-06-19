@@ -1,0 +1,6 @@
+policy_no,member_id,id_document_type,id_document_no,relationship,dependent_status,dependent_coverage_end_date
+HIC-2024-00123,M-200,nric,S7801234A,self,active,
+HIC-2024-00123,M-201,nric,S8512345B,spouse,active,2026-12-31
+HIC-2026-12345,M-001,nric,S1234567D,self,active,
+HIC-2026-12345,M-002,nric,S2345678E,spouse,active,2026-12-31
+HIC-2026-67890,M-100,nric,S9876543F,self,active,

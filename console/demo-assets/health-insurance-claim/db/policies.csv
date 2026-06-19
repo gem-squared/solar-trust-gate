@@ -1,0 +1,4 @@
+policy_no,policy_holder_id,policy_status,policy_start_date,policy_expiry_date,policy_product_code,premium_payment_mode,next_premium_due_date
+HIC-2024-00123,M-200,active,2023-06-01,2026-12-31,COMP-HEALTH-GOLD,monthly,2026-06-01
+HIC-2026-12345,M-001,active,2024-01-01,2026-12-31,COMP-HEALTH-GOLD,monthly,2026-06-01
+HIC-2026-67890,M-100,active,2025-06-01,2027-05-31,COMP-HEALTH-SILVER,quarterly,2026-09-01

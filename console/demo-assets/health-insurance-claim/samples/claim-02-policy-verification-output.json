@@ -1,0 +1,16 @@
+{
+  "claim_reference_draft": "DRAFT-20260518-00001",
+  "policy_no": "HIC-2026-12345",
+  "claimant_name": "Ah Beng Tan",
+  "claim_type": "hospitalisation",
+  "incident_date": "2026-05-15",
+  "claim_amount_requested": 8500.00,
+  "policy_verified": true,
+  "verification_failure": null,
+  "policy_start_date": "2024-01-01",
+  "policy_expiry_date": "2026-12-31",
+  "policy_product_code": "COMP-HEALTH-GOLD",
+  "premium_payment_mode": "monthly",
+  "dependent_verified": true,
+  "verification_timestamp": "2026-05-18T10:01:00+08:00"
+}

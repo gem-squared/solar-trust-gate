@@ -1,0 +1,7 @@
+[
+  {
+    "id": "InsClaims-PolicyDoc-§6",
+    "stage": "claim-03-eligibility-check",
+    "text": "Eligible claims have plan coverage, satisfied waiting period, and remaining annual limit. Proof: eligible=true ⇒ claim_type_covered=true AND waiting_period_satisfied=true AND annual_limit_remaining > 0 AND claimable_ceiling ≤ claim_amount_requested."
+  }
+]

@@ -1,0 +1,1631 @@
+/* ─────────────────────────────────────────────────────────────────── *
+ * Workflow Canvas — page chrome + Drawflow overrides.
+ *
+ * Theme tokens come from /static/style.css (--accent, --bg, --bg-card,
+ * --border, --text, --text-dim, --green, --yellow, --red, --radius,
+ * --green-bg, --yellow-bg, --red-bg, --accent-dim).
+ *
+ * Drawflow overrides use specificity 0,2,0 — match Drawflow's own
+ * `.drawflow .drawflow-node` selectors and win by source order. No
+ * !important. (Pattern verified by WP-AO-37 Unit 3 spike, GREEN.)
+ * ─────────────────────────────────────────────────────────────────── */
+
+/* ── Page layout ──────────────────────────────────────────────────── */
+.wf-page {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  /* min-height: 100vh on body from style.css is OK; we explicitly set
+     height: 100vh which wins. */
+}
+
+/* Override style.css's `main { max-width: 1200px; margin: 0 auto; padding: ... }`
+   and `header { padding: 2rem 0 }` — those are tailored for the loan-approval
+   landing page, not for the fullscreen canvas. Specificity 0,1,1 beats
+   style.css's 0,0,1. */
+body.wf-page header,
+body.wf-page main {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+body.wf-page header.wf-header {
+  /* re-apply my own padding rule that the override above would also
+     defeat — header chrome needs its 10/18 inner padding back. */
+  padding: 10px 18px;
+}
+
+/* ── Top header ───────────────────────────────────────────────────── */
+.wf-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  min-height: 56px;
+}
+.wf-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  user-select: none;
+}
+.wf-logo {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+.wf-tag {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.wf-title-block {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  max-width: 640px;
+}
+.wf-title-input,
+.wf-slug-input {
+  background: var(--bg-input);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.wf-title-input { flex: 2; }
+.wf-slug-input  { flex: 1; font-family: ui-monospace, monospace; }
+.wf-title-input:focus,
+.wf-slug-input:focus { border-color: var(--accent); }
+
+.wf-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-items: center;
+}
+/* WP-AO-41 scenario picker — pre-filled inputs for the claims demo */
+.wf-scenario-picker {
+  background: var(--bg-input);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  max-width: 320px;
+  outline: none;
+  cursor: pointer;
+}
+.wf-scenario-picker:focus,
+.wf-scenario-picker:hover { border-color: var(--accent); }
+.wf-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.wf-btn:hover { border-color: var(--accent); color: var(--accent); }
+.wf-btn-accent {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.wf-btn-accent:hover { filter: brightness(1.15); }
+.wf-btn-ghost { color: var(--text-dim); }
+.wf-btn-ghost:hover { color: var(--accent); }
+
+/* ── 3-column body ────────────────────────────────────────────────── */
+.wf-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;       /* lets flex children overflow correctly */
+}
+
+/* ── Palette sidebar ─────────────────────────────────────────────── */
+.wf-palette {
+  /* WP-AO-57 — width driven by CSS variable so the horizontal splitter can
+     mutate it live; default 280px, clamp range 180-500 enforced in JS. */
+  width: var(--wf-palette-width, 280px);
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.wf-palette-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.wf-palette-header h3 {
+  margin: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+.wf-palette-count {
+  background: var(--bg-input);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.wf-palette-search {
+  margin: 8px 12px;
+  background: var(--bg-input);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+}
+.wf-palette-search:focus { border-color: var(--accent); }
+.wf-palette-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px 12px;
+}
+.wf-palette-empty {
+  padding: 16px 4px;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+}
+.wf-palette-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 11px;
+  margin-bottom: 8px;
+  cursor: grab;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+.wf-palette-card:hover {
+  border-color: var(--accent);
+  background: rgba(6, 182, 212, 0.08);
+}
+.wf-palette-card[draggable=true]:active { cursor: grabbing; }
+.wf-palette-slug {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+}
+.wf-palette-model {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* ── Canvas wrap ──────────────────────────────────────────────────── */
+.wf-canvas-wrap {
+  flex: 1;
+  position: relative;
+  background:
+    radial-gradient(circle at 0 0, rgba(100,116,139,0.08) 1px, transparent 1px) 0 0/24px 24px,
+    var(--bg);
+  min-width: 0;
+}
+.wf-drawflow {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+.wf-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 14, 23, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.wf-overlay.hidden { display: none; }
+.wf-overlay-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  max-width: 420px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+.wf-overlay-card h2 { margin: 0 0 8px; color: var(--text); }
+.wf-overlay-card p  { margin: 0 0 18px; color: var(--text-dim); line-height: 1.5; }
+
+/* ── Drawflow overrides (no !important; specificity 0,2,0) ────────── */
+.drawflow .drawflow-node {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 260px;
+  min-height: auto;
+  padding: 0;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.drawflow .drawflow-node.selected {
+  background: var(--bg-card);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+.drawflow .drawflow-node .input,
+.drawflow .drawflow-node .output {
+  background: var(--bg-input);
+  border: 2px solid var(--border);
+}
+.drawflow .drawflow-node .input:hover,
+.drawflow .drawflow-node .output:hover {
+  border-color: var(--accent);
+}
+.drawflow .connection .main-path {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.drawflow .connection .main-path.selected { stroke: var(--yellow); }
+
+/* ── Execution state classes (toggled by Unit 6 JS) ───────────────── */
+.drawflow .drawflow-node.wf-running {
+  border-color: var(--accent);
+  animation: wf-pulse 1.2s ease-in-out infinite;
+}
+@keyframes wf-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(6, 182, 212, 0); }
+}
+.drawflow .drawflow-node.wf-l0-pass    { box-shadow: 0 0 0 1px var(--green) inset; }
+.drawflow .drawflow-node.wf-l0-deny    { border-color: var(--red); animation: wf-shake 0.3s; }
+.drawflow .drawflow-node.wf-l1-pass    { border-color: var(--green); }
+.drawflow .drawflow-node.wf-l1-deny    { border-color: var(--red); animation: wf-shake 0.3s; }
+.drawflow .drawflow-node.wf-l2-success { border-color: var(--green); }
+.drawflow .drawflow-node.wf-l2-failure { border-color: var(--red); animation: wf-shake 0.3s; }
+.drawflow .drawflow-node.wf-l3-pass    { box-shadow: 0 0 0 1px var(--green) inset; }
+.drawflow .drawflow-node.wf-l3-deny    { border-color: var(--red); animation: wf-shake 0.3s; }
+/* All four layers pass → dark-green fill (5-gate full-green at-a-glance). */
+.drawflow .drawflow-node.wf-l0-pass.wf-l1-pass.wf-l2-success.wf-l3-pass {
+  background-color: rgba(16, 185, 129, 0.22);
+  border-color: var(--green);
+}
+/* L1+L2 only (back-compat with WP-AO trace) — kept for graceful upgrade. */
+.drawflow .drawflow-node.wf-l1-pass.wf-l2-success {
+  background-color: rgba(16, 185, 129, 0.14);
+  border-color: var(--green);
+}
+@keyframes wf-shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-4px); }
+  75%      { transform: translateX(4px); }
+}
+
+/* ── CE-card content (populated by JS — mirrors WP-AO-37 spike) ───── */
+.ce-card {
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  font-family: inherit;
+}
+.ce-card .ce-slug {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-all;
+  font-family: ui-monospace, monospace;
+}
+.ce-card .ce-model {
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.ce-card .chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.ce-card .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: filter 0.15s;
+}
+.ce-card .chip:hover { filter: brightness(1.2); }
+.ce-card .chip.l0   { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.ce-card .chip.l1   { background: var(--green-bg); color: var(--green); }
+.ce-card .chip.l2   { background: var(--green-bg); color: var(--green); }
+.ce-card .chip.l3   { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.ce-card .chip.pre  { background: var(--yellow-bg); color: var(--yellow); }
+.ce-card .chip.post { background: var(--red-bg);   color: var(--red); }
+
+/* ── Bottom trace panel ───────────────────────────────────────────── */
+.wf-trace {
+  /* WP-AO-57 — height driven by CSS variable so the vertical splitter can
+     mutate it live; default 180px, clamp range 60px – 60vh enforced in JS. */
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: var(--wf-trace-height, 180px);
+  transition: height 0.2s;
+  overflow: hidden;
+}
+.wf-trace.collapsed { height: 32px !important; }
+
+/* WP-AO-57 — splitter handles between layout regions */
+.wf-splitter {
+  background: rgba(100, 116, 139, 0.12);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.wf-splitter:hover,
+.wf-splitter.dragging {
+  background: var(--accent);
+  opacity: 0.6;
+}
+.wf-splitter-h {
+  width: 6px;
+  cursor: col-resize;
+  align-self: stretch;
+}
+.wf-splitter-v {
+  height: 6px;
+  cursor: row-resize;
+  width: 100%;
+}
+/* Body-level class added during drag so cursor stays consistent over child elements
+   that would otherwise reassert their own cursor (palette, canvas, trace). */
+body.wf-dragging-h, body.wf-dragging-h * { cursor: col-resize !important; user-select: none; }
+body.wf-dragging-v, body.wf-dragging-v * { cursor: row-resize !important; user-select: none; }
+.wf-trace-header {
+  display: flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+.wf-trace-header h3 {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.wf-trace-meta {
+  margin-left: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  flex: 1;
+}
+.wf-trace-chevron {
+  font-size: 11px;
+  color: var(--text-dim);
+  transition: transform 0.2s;
+}
+.wf-trace.collapsed .wf-trace-chevron { transform: rotate(-90deg); }
+.wf-trace-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+}
+.wf-trace-empty {
+  color: var(--text-dim);
+  text-align: center;
+  padding: 16px 0;
+  font-family: system-ui;
+}
+.wf-trace-row {
+  display: grid;
+  grid-template-columns: 90px 50px 60px 90px 1fr;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px dashed rgba(100,116,139,0.15);
+}
+.wf-trace-row .tr-time   { color: var(--text-dim); }
+.wf-trace-row .tr-phase  { color: var(--accent); text-transform: uppercase; }
+.wf-trace-row .tr-node   { color: var(--text); }
+.wf-trace-row .tr-verdict { font-weight: 600; }
+.wf-trace-row .tr-verdict.ok   { color: var(--green); }
+.wf-trace-row .tr-verdict.deny { color: var(--red); }
+.wf-trace-row .tr-reasons summary { cursor: pointer; color: var(--text-dim); font-family: system-ui; font-size: 11px; }
+.wf-trace-row .tr-reasons[open] summary { color: var(--text); }
+.wf-trace-row .tr-reasons li { margin: 2px 0; color: var(--text-dim); font-family: system-ui; font-size: 11px; }
+
+/* WP-AO-60 — per-node trace section grouping
+   Each node gets a collapsible section with a colored left border + header
+   showing node-id, CE slug, and a status pill. Body holds the L1/tool/exec/L2
+   rows for that node. Successful nodes auto-collapse (class added by JS). */
+.wf-trace-node-group {
+  margin: 8px 6px 8px 0;
+  border-left: 3px solid rgba(100, 116, 139, 0.4);
+  background: rgba(100, 116, 139, 0.04);
+  border-radius: 0 4px 4px 0;
+  overflow: hidden;
+  transition: border-left-color 0.2s, background 0.2s;
+}
+.wf-trace-node-group.running       { border-left-color: var(--accent, #06b6d4); }
+.wf-trace-node-group.l1-pass       { border-left-color: var(--accent, #06b6d4); }
+.wf-trace-node-group.l2-success    { border-left-color: #16a34a; }
+.wf-trace-node-group.l2-failure    { border-left-color: #dc2626; background: rgba(220, 38, 38, 0.06); }
+.wf-trace-node-group.error         { border-left-color: #dc2626; background: rgba(220, 38, 38, 0.06); }
+
+.wf-trace-node-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+}
+.wf-trace-node-header:hover { background: rgba(100, 116, 139, 0.08); }
+.wf-trace-chevron-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0 2px;
+  transition: transform 0.15s;
+}
+.wf-trace-collapsed .wf-trace-chevron-btn { transform: rotate(-90deg); }
+.wf-trace-node-id {
+  background: rgba(100, 116, 139, 0.18);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+.wf-trace-node-slug {
+  flex: 1;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wf-trace-node-status {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.wf-trace-node-group.running    .wf-trace-node-status { color: var(--accent, #06b6d4); }
+.wf-trace-node-group.l1-pass    .wf-trace-node-status { color: var(--green, #22c55e); }
+.wf-trace-node-group.l2-success .wf-trace-node-status { color: var(--green, #22c55e); }
+.wf-trace-node-group.l2-failure .wf-trace-node-status { color: #f87171; }
+.wf-trace-node-group.error      .wf-trace-node-status { color: #f87171; }
+
+.wf-trace-node-body {
+  padding: 4px 12px 6px;
+  border-top: 1px solid rgba(100, 116, 139, 0.1);
+  max-height: 1000px;
+  transition: max-height 0.25s ease-out, padding 0.25s, border-top-color 0.25s;
+}
+.wf-trace-node-group.wf-trace-collapsed .wf-trace-node-body {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top-color: transparent;
+  overflow: hidden;
+}
+
+/* WP-AO-59 — active trace row sweep animation. While a phase is in flight
+   (state="running"), the row gets a cyan gradient that sweeps left-to-right
+   across its background. Removed once the completion event lands. */
+@keyframes wf-row-scan {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%);  }
+}
+.wf-trace-row.wf-active {
+  position: relative;
+  overflow: hidden;
+  background: rgba(6, 182, 212, 0.05);
+}
+.wf-trace-row.wf-active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(6, 182, 212, 0.3) 50%,
+    transparent 100%
+  );
+  animation: wf-row-scan 1.2s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.wf-trace-row.wf-active > span {
+  position: relative;
+  z-index: 1;
+}
+.wf-trace-row.wf-active .tr-verdict {
+  color: var(--accent, #06b6d4);
+  font-style: italic;
+}
+
+/* WP-AO-58 — workflow Run progress bar (top of canvas, under header) */
+.wf-progress {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: rgba(100, 116, 139, 0.18);
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: height 0.18s, opacity 0.4s;
+}
+.wf-progress.hidden {
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.wf-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent, #06b6d4) 0%, #7b61ff 100%);
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+  transition: width 0.25s ease-out, background 0.25s;
+}
+.wf-progress.success .wf-progress-fill {
+  background: linear-gradient(90deg, #16a34a 0%, #4ade80 100%);
+  box-shadow: 0 0 10px rgba(22, 163, 74, 0.7);
+}
+.wf-progress.failure .wf-progress-fill {
+  background: linear-gradient(90deg, #dc2626 0%, #f87171 100%);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.7);
+}
+
+/* WP-AO-56 — bridge-check midpoint badge replacing Drawflow native x-delete */
+/* Suppress the Drawflow connection-delete circle: .drawflow > .drawflow-delete
+   targets ONLY the connection variant (node-delete is .parent-node .drawflow-delete
+   and stays visible). */
+.drawflow > .drawflow-delete {
+  display: none !important;
+}
+
+/* WP-AO-56 final — bridge badge is HIDDEN by default. Bridge-check still
+   runs silently; only when the user clicks a line does the red ✕ delete
+   button surface at the midpoint. Click ✕ → remove. Click elsewhere →
+   ✕ disappears. David 2026-05-18T12:38: "'✕' mark only, when a line selected". */
+.wf-bridge-badge {
+  display: none;
+  pointer-events: all;
+}
+.wf-bridge-badge .wf-bridge-glyph {
+  fill: #fff;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  pointer-events: none;
+}
+/* Delete-mode: selected line forces the badge visible as a red ✕. */
+.connection.wf-delete-mode .wf-bridge-badge {
+  display: block !important;
+  cursor: pointer;
+}
+.connection.wf-delete-mode .wf-bridge-badge .wf-bridge-circle {
+  fill: #dc2626 !important;
+  stroke: #fca5a5 !important;
+  stroke-width: 1.5;
+  animation: wf-delete-pulse 0.9s ease-in-out infinite;
+}
+@keyframes wf-delete-pulse {
+  0%, 100% { stroke-width: 1.5; filter: drop-shadow(0 0 0 transparent); }
+  50%      { stroke-width: 2.5; filter: drop-shadow(0 0 6px rgba(220, 38, 38, 0.7)); }
+}
+
+/* WP-AO-53 U5 — tool-call trace row (between L1 and EXEC) */
+.wf-trace-row.wf-trace-tool {
+  background: rgba(100, 116, 139, 0.05);
+  border-bottom: 1px dashed rgba(100, 116, 139, 0.08);
+  font-size: 11px;
+}
+.wf-trace-row.wf-trace-tool .tr-phase-tool {
+  color: #ffa726;
+  font-size: 13px;
+  text-transform: none;
+  text-align: center;
+}
+.wf-trace-row.wf-trace-tool .tr-tool {
+  grid-column: 4 / -1; /* span the verdict + reasons columns */
+  color: var(--text-dim);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wf-trace-row.wf-trace-tool .tr-tool code {
+  color: var(--text);
+  background: rgba(255, 167, 38, 0.08);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.wf-trace-row.wf-trace-tool .tr-err {
+  color: var(--red);
+  margin-left: 8px;
+}
+
+.wf-trace-banner {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+.wf-trace-banner.hidden { display: none; }
+.wf-trace-banner.success { background: var(--green-bg); color: var(--green); border-top: 1px solid var(--green); }
+.wf-trace-banner.failure { background: var(--red-bg);   color: var(--red);   border-top: 1px solid var(--red); }
+
+/* ── Toasts ───────────────────────────────────────────────────────── */
+.wf-toasts {
+  position: fixed;
+  top: 72px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 200;
+  pointer-events: none;
+}
+.wf-toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text);
+  max-width: 360px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  pointer-events: auto;
+  animation: wf-toast-in 0.2s ease-out;
+}
+.wf-toast.ok      { border-color: var(--green); color: var(--green); }
+.wf-toast.warn    { border-color: var(--yellow); color: var(--yellow); }
+.wf-toast.danger  { border-color: var(--red); color: var(--red); }
+@keyframes wf-toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Responsive (narrow window) ───────────────────────────────────── */
+@media (max-width: 900px) {
+  .wf-palette { width: 200px; }
+  .wf-title-block { max-width: 320px; }
+}
+
+/* ── WP-AO-39: Deploy-now CTA (in canvas header, next to Run) ────── */
+/* Lives in the .wf-actions group alongside Load/Save/Run. Green pill
+   styling differentiates it from the cyan ▶ Run button — visually
+   says "this is the deploy step, semantically downstream of Run". */
+.wf-deploy-btn {
+  margin-left: 8px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #0a0f1e;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid rgba(16, 185, 129, 0.7);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+}
+.wf-deploy-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #475569, #334155);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.3);
+  animation: none;
+}
+.wf-deploy-btn:not(:disabled) {
+  animation: wf-deploy-pulse 2.6s ease-in-out infinite;
+}
+.wf-deploy-btn:not(:disabled):hover {
+  transform: scale(1.04);
+  filter: brightness(1.1);
+}
+@keyframes wf-deploy-pulse {
+  0%, 100% { box-shadow: 0 0 0 0  rgba(16, 185, 129, 0.45); }
+  50%      { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+}
+
+/* ── WP-AO-39: Deploy collision modal ─────────────────────────────── */
+.wf-deploy-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 400; padding: 20px;
+}
+.wf-deploy-modal.hidden { display: none; }
+.wf-deploy-modal-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 22px 24px; max-width: 480px; width: 100%;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+.wf-deploy-modal-card h3 { margin: 0 0 10px; font-size: 1.05rem; color: var(--accent); }
+.wf-deploy-modal-body  { color: var(--text-dim); font-size: 0.92rem; margin: 0 0 16px; line-height: 1.5; }
+.wf-deploy-modal-body code { color: var(--accent); background: var(--bg); padding: 2px 6px; border-radius: 3px; }
+.wf-deploy-modal-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.wf-btn-danger {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid var(--red);
+  color: var(--red);
+  padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;
+}
+.wf-btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+/* ── WP-AO-39: Deploy success card ────────────────────────────────── */
+.wf-deploy-success {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--bg-card); border: 1px solid var(--green);
+  border-radius: var(--radius); padding: 16px 18px; max-width: 380px;
+  z-index: 250; box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+}
+.wf-deploy-success.hidden { display: none; }
+.wf-deploy-success h3 { margin: 0 0 8px; color: var(--green); font-size: 0.95rem; }
+.wf-deploy-success p  { margin: 0 0 4px; color: var(--text-dim); font-size: 0.82rem; }
+.wf-deploy-success-link {
+  color: var(--accent);
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  word-break: break-all;
+  display: block;
+  margin: 4px 0 12px;
+}
+.wf-deploy-success-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ── WP-AO-49 Unit 3: CE Palette reload button ────────────────────── */
+.wf-palette-header-right {
+  display: flex; align-items: center; gap: 6px;
+}
+.wf-palette-reload-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, transform 0.4s;
+  font-family: inherit;
+}
+.wf-palette-reload-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.wf-palette-reload-btn:active { transform: rotate(360deg); }
+.wf-palette-reload-btn.spinning { animation: wf-palette-spin 0.6s ease-out; color: var(--accent); }
+@keyframes wf-palette-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── WP-AO-50: per-workflow L1/L2 audit toggles in the toolbar ────── */
+.wf-audit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+.wf-audit-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.wf-audit-toggle input[type=checkbox] {
+  accent-color: var(--accent);
+  margin: 0;
+  cursor: pointer;
+}
+.wf-audit-toggle:has(input:checked) {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* ── WP-AO-51: Toolbar hamburger menu + zoom controls + CE modal ── */
+
+.wf-actions {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.wf-btn-icon {
+  padding: 4px 8px;
+  min-width: 28px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.wf-zoom-group {
+  display: inline-flex;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1px;
+  background: var(--bg-input);
+}
+.wf-zoom-group .wf-btn-icon {
+  border: none;
+  background: transparent;
+}
+.wf-zoom-group .wf-btn-icon:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.wf-menu-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.wf-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 200;
+  min-width: 220px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wf-menu-dropdown.hidden { display: none; }
+.wf-menu-item {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+.wf-menu-item:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.wf-menu-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 4px 0;
+}
+.wf-menu-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+.wf-menu-toggle input[type=checkbox] {
+  accent-color: var(--accent);
+  margin: 0 4px 0 0;
+  cursor: pointer;
+}
+.wf-menu-toggle:has(input:checked) {
+  color: var(--accent);
+}
+
+/* ── Per-node CE viewer modal ─────────────────────────────────────── */
+.wf-ce-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.wf-ce-modal.hidden { display: none; }
+.wf-ce-modal-card {
+  position: relative;
+  width: 90vw; max-width: 1100px;
+  height: 90vh;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 10px 60px rgba(0,0,0,0.7);
+}
+.wf-ce-modal-close {
+  position: absolute;
+  top: 8px; right: 12px;
+  z-index: 510;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 18px; line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.wf-ce-modal-close:hover {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+.wf-ce-modal-frame {
+  width: 100%; height: 100%;
+  border: 0;
+  background: var(--bg);
+}
+
+/* ── Node-clickable cursor hint ───────────────────────────────────── */
+.drawflow .drawflow-node {
+  cursor: pointer;
+}
+.drawflow .drawflow-node.selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── WP-AO-51 revised: CE viewer strip at the bottom of each node ── */
+.ce-card-viewer-strip {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, var(--accent-dim), rgba(6, 182, 212, 0.18));
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, filter 0.15s, transform 0.1s;
+}
+.ce-card-viewer-strip:hover {
+  background: var(--accent);
+  color: var(--bg);
+  filter: brightness(1.1);
+}
+.ce-card-viewer-strip:active { transform: scale(0.97); }
+
+/* Node card needs to NOT block strip clicks via Drawflow's selected outline */
+.drawflow .drawflow-node {
+  cursor: grab;
+}
+.drawflow .drawflow-node:active { cursor: grabbing; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   U9 — Migrated from crafter.css (retired): gate-cover, ⚡ Load demo
+   project button (resized for header), 🔒 lock button.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ⚡ Load demo project — header placement (was sidebar block in Crafter) */
+.btn-load-demo {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, var(--accent, #ea580c) 0%, #7b61ff 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius, 8px);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: filter 0.15s, transform 0.05s;
+  white-space: nowrap;
+}
+.btn-load-demo:hover:not(:disabled) { filter: brightness(1.12); }
+.btn-load-demo:active:not(:disabled) { transform: scale(0.98); }
+.btn-load-demo:disabled { opacity: 0.65; cursor: progress; }
+
+/* 🔒 Lock button */
+.lock-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border, #1a2540);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.lock-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(234, 88, 12, 0.08);
+}
+.lock-btn:active { transform: translateY(1px); }
+
+/* Gate cover (TechEX pitch / Enter Console) */
+.gate-cover {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #060914 0%, #0f172a 50%, #1e1b4b 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+.gate-cover.hidden { display: none; }
+
+.gate-content {
+  max-width: 980px;
+  width: 100%;
+  text-align: center;
+  padding: 32px;
+}
+
+.gate-logo {
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: -2px;
+  color: var(--accent);
+  margin-bottom: 8px;
+  text-shadow: 0 0 32px rgba(234, 88, 12, 0.4);
+}
+
+.gate-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.gate-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  margin-bottom: 14px;
+}
+.gate-subtitle strong { color: var(--text); font-weight: 600; }
+.gate-formula {
+  display: inline-block;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  color: var(--accent);
+  background: rgba(234, 88, 12, 0.10);
+  border: 1px solid rgba(234, 88, 12, 0.30);
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 0.95em;
+  letter-spacing: 1px;
+}
+
+/* Pipeline chip row — L0 → L1 → F → L2 → L3 */
+.gate-pipeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0 28px;
+  flex-wrap: wrap;
+}
+.gp-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(234, 88, 12, 0.30);
+  border-radius: 12px;
+  padding: 8px 12px;
+  min-width: 96px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+.gp-chip.gp-f {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.10);
+}
+.gp-icon { font-size: 1.2rem; line-height: 1; }
+.gp-gate { font-size: 1.05rem; font-weight: 800; color: var(--accent); margin-top: 2px; }
+.gp-chip.gp-f .gp-gate { color: var(--green, #10b981); }
+.gp-role { font-size: 0.68rem; color: var(--text-dim); margin-top: 1px; letter-spacing: 0.3px; }
+.gp-arrow {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.gate-pitch {
+  font-size: 1rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+.gate-pitch strong { color: var(--accent); font-weight: 600; }
+.gate-pitch em { color: var(--text); font-style: normal; font-weight: 600; }
+.gate-layer-desc em { color: var(--accent); font-style: normal; font-weight: 600; }
+
+.gate-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.gate-layer {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.gate-layer-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.gate-layer strong {
+  display: block;
+  color: var(--text);
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.gate-layer-desc {
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.gate-auth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.gate-btn {
+  width: 320px;
+  max-width: 100%;
+  padding: 12px 16px;
+  background: var(--accent);
+  color: #0a0e17;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.gate-btn:hover { opacity: 0.9; }
+.gate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.gate-footer {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 32px;
+  line-height: 1.7;
+}
+.gate-footer strong { color: var(--accent); }
+.gate-team {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--text-dim);
+}
+.gate-team-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(234, 88, 12, 0.12);
+  border: 1px solid rgba(234, 88, 12, 0.30);
+  color: var(--accent);
+  font-size: 0.72em;
+  letter-spacing: 0.5px;
+  margin-left: 2px;
+}
+
+@media (max-width: 600px) {
+  .gate-content { padding: 16px; }
+  .gate-logo { font-size: 2.8rem; }
+  .gate-title { font-size: 1.3rem; }
+  .gate-btn { width: 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WP-01 U5 — Layer popup modal (L0/L1/L2/L3 chip click target).
+   Reuses wf-deploy-modal pattern; opens only on DENY/LOG verdicts.
+   ═══════════════════════════════════════════════════════════════════ */
+.wf-layer-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.wf-layer-modal.hidden { display: none; }
+.wf-layer-modal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-width: 720px; width: 100%;
+  padding: 22px 26px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.wf-layer-modal-close {
+  position: absolute;
+  top: 10px; right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  line-height: 1;
+}
+.wf-layer-modal-close:hover { color: var(--accent); }
+.wf-layer-modal-title {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.wf-layer-modal-title.verdict-allow { color: var(--green); }
+.wf-layer-modal-title.verdict-log   { color: var(--yellow); }
+.wf-layer-modal-title.verdict-deny  { color: var(--red); }
+
+.wf-layer-modal-summary {
+  display: flex; flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+}
+.wf-layer-modal-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border-radius: 4px;
+  line-height: 1.4;
+}
+.wf-layer-modal-label {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.wf-layer-modal-value {
+  color: var(--text);
+  word-break: break-word;
+}
+.wf-layer-modal-details {
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.wf-layer-modal-details summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  padding: 4px 0;
+}
+.wf-layer-modal-details summary:hover { color: var(--accent); }
+.wf-layer-modal-payload {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  color: var(--text-dim);
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WP-01 — Audit Log modal
+   ═══════════════════════════════════════════════════════════════════ */
+.wf-audit-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 9100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.wf-audit-modal.hidden { display: none; }
+.wf-audit-modal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-width: 1280px; width: 100%;
+  max-height: 88vh;
+  display: flex; flex-direction: column;
+  padding: 22px 26px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+}
+.wf-audit-modal-close {
+  position: absolute; top: 10px; right: 14px;
+  background: transparent; border: none;
+  font-size: 1.6rem; color: var(--text-dim);
+  cursor: pointer; line-height: 1;
+}
+.wf-audit-modal-close:hover { color: var(--accent); }
+.wf-audit-modal-title {
+  margin: 0 0 4px;
+  font-size: 1.15rem; color: var(--accent);
+  font-weight: 700;
+}
+.wf-audit-modal-title span { color: var(--text-dim); font-weight: 500; font-size: 0.85em; }
+.wf-audit-modal-sub {
+  margin: 0 0 14px;
+  font-size: 0.82rem; color: var(--text-dim);
+  line-height: 1.5;
+}
+.wf-audit-modal-sub code {
+  font-family: ui-monospace, monospace;
+  color: var(--accent);
+  background: rgba(234,88,12,0.10);
+  padding: 1px 6px; border-radius: 3px;
+  font-size: 0.92em;
+}
+
+.wf-audit-summary {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+}
+.wf-audit-pill-group {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-card);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.wf-audit-pill-group b { color: var(--accent); font-weight: 700; margin-right: 4px; }
+.wf-audit-pill {
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: 0.76rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(148,163,184,0.10);
+  color: var(--text-dim);
+}
+.wf-audit-pill.v-allow,
+.wf-audit-pill.v-success   { color: var(--green); background: rgba(16,185,129,0.12); }
+.wf-audit-pill.v-log,
+.wf-audit-pill.v-review    { color: var(--yellow); background: rgba(250,204,21,0.12); }
+.wf-audit-pill.v-deny,
+.wf-audit-pill.v-failure   { color: var(--red);   background: rgba(239,68,68,0.12); }
+
+.wf-audit-controls {
+  display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.wf-audit-controls label {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text-dim);
+}
+.wf-audit-controls select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 0.82rem;
+}
+.wf-audit-controls select:focus { border-color: var(--accent); outline: none; }
+.wf-audit-status {
+  margin-left: auto;
+  color: var(--text-dim);
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+}
+
+.wf-audit-table-wrap {
+  flex: 1;
+  overflow: auto;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.wf-audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  font-family: ui-monospace, 'JetBrains Mono', monospace;
+}
+.wf-audit-table thead {
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 2;
+}
+.wf-audit-table th {
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+.wf-audit-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(148,163,184,0.08);
+  color: var(--text);
+  vertical-align: top;
+}
+.wf-audit-table tr:hover td { background: rgba(234,88,12,0.06); }
+.wf-audit-ts { color: var(--text-dim); white-space: nowrap; }
+.wf-audit-layer { font-weight: 700; }
+.wf-audit-layer-L0, .wf-audit-layer-L3 { color: var(--accent); }
+.wf-audit-layer-L1, .wf-audit-layer-L2 { color: var(--yellow); }
+.wf-audit-verdict { font-weight: 700; }
+.wf-audit-verdict.v-allow,   .wf-audit-verdict.v-success { color: var(--green); }
+.wf-audit-verdict.v-log,     .wf-audit-verdict.v-review  { color: var(--yellow); }
+.wf-audit-verdict.v-deny,    .wf-audit-verdict.v-failure { color: var(--red); }
+.wf-audit-deny { color: var(--text-dim); max-width: 360px; word-break: break-word; }
+.wf-audit-empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 24px 12px !important;
+  font-style: italic;
+  font-family: inherit;
+}
+
+
+/* Audit-log CTA button — stand-out gold/yellow so judges find it */
+.wf-audit-btn-cta {
+  background: rgba(250, 204, 21, 0.10);
+  border-color: rgba(250, 204, 21, 0.55);
+  color: var(--yellow);
+  font-weight: 600;
+}
+.wf-audit-btn-cta:hover {
+  background: rgba(250, 204, 21, 0.18);
+  border-color: var(--yellow);
+  color: var(--yellow);
+  filter: brightness(1.1);
+}
+
+/* David 2026-05-19 — scenario picker dropdown hidden; canonical input
+   surface is now per-node SampleI via the CE Viewer. */
+.wf-scenario-picker { display: none !important; }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   One-time Field Manual modal — first visit only (localStorage gated)
+   ═══════════════════════════════════════════════════════════════════ */
+.wf-manual-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72);
+  z-index: 9500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.wf-manual-modal.hidden { display: none; }
+.wf-manual-modal-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(234,88,12,0.35);
+  border-radius: 14px;
+  max-width: 720px; width: 100%;
+  padding: 28px 32px 22px;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 60px rgba(234,88,12,0.15);
+}
+.wf-manual-modal-close {
+  position: absolute; top: 10px; right: 14px;
+  background: transparent; border: none;
+  font-size: 1.7rem; color: var(--text-dim);
+  cursor: pointer; line-height: 1;
+}
+.wf-manual-modal-close:hover { color: var(--accent); }
+.wf-manual-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 4px;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.wf-manual-modal-title {
+  margin: 0 0 8px;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.wf-manual-modal-sub {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.wf-manual-video {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;   /* 16:9 aspect */
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.wf-manual-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.wf-manual-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+.wf-manual-actions .wf-btn-accent {
+  text-decoration: none;
+  font-weight: 700;
+  padding: 8px 18px;
+}

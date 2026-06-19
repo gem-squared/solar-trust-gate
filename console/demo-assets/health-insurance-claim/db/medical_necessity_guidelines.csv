@@ -1,0 +1,6 @@
+icd10_code,cpt_code,necessity_confirmed,notes
+J18.9,99223,1,Initial inpatient evaluation for pneumonia is medically necessary
+J18.9,99232,1,Subsequent hospital care for pneumonia
+J18.9,71046,1,Chest X-ray for pneumonia diagnostic workup
+J45.901,99213,1,Office visit for asthma exacerbation
+M54.5,99213,1,Office visit for low back pain

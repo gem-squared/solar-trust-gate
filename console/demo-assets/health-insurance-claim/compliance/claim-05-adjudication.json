@@ -1,0 +1,7 @@
+[
+  {
+    "id": "InsClaims-PolicyDoc-§8",
+    "stage": "claim-05-adjudication",
+    "text": "Adjudication conserves the claim amount. Proof: net_payable + claimant_liability = claim_amount_requested (±0.01) AND adjudication_status='approved' iff net_payable > 0."
+  }
+]

@@ -1,0 +1,6 @@
+pre_auth_no,policy_no,claim_type,status,expiry_date,approved_amount
+PA-2026-000042,HIC-2024-00123,hospitalisation,approved,2026-12-31,20000
+PA-2026-000099,HIC-2025-00789,maternity,approved,2026-12-31,15000
+PA-2026-000200,HIC-2022-00321,surgical,approved,2026-12-31,15000
+PA-2026-000300,HIC-2026-12345,hospitalisation,approved,2026-08-15,15000
+PA-2026-000301,HIC-2026-67890,surgical,approved,2026-09-30,20000

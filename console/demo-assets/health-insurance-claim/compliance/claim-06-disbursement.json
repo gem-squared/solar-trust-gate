@@ -1,0 +1,7 @@
+[
+  {
+    "id": "MAS-Notice-117-§7",
+    "stage": "claim-06-disbursement",
+    "text": "Disbursed claims have traceable settlement references and masked bank data. Proof: disbursement_status='disbursed' ⇒ settlement_ref matches ^SETT-\\d{8}-\\d{5}$ AND claim_reference_no matches ^CLM-\\d{4}-\\d{7}$ AND (masked_bank_account_no is null OR masked_bank_account_no matches ^\\*{4}\\d{4}$)."
+  }
+]

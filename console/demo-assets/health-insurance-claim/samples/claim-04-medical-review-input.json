@@ -1,0 +1,21 @@
+{
+  "claim_reference_draft": "DRAFT-20260518-00001",
+  "policy_no": "HIC-2026-12345",
+  "claimant_name": "Ah Beng Tan",
+  "claim_type": "hospitalisation",
+  "incident_date": "2026-05-15",
+  "claim_amount_requested": 8500.00,
+  "claimable_ceiling": 8500.00,
+  "provider_name": "Mount Elizabeth Hospital",
+  "provider_registration": "MEH-2024-001",
+  "supporting_documents": ["medical_bill", "discharge_summary", "specialist_memo"],
+  "medical_details": {
+    "primary_diagnosis_icd10": "J18.9",
+    "procedure_cpt_codes": ["99223"],
+    "admission_date": "2026-05-15",
+    "discharge_date": "2026-05-17",
+    "attending_physician": "Dr. Lim Wei Ming",
+    "physician_license_no": "MCR-12345A",
+    "pre_authorisation_no": "PA-2026-000042"
+  }
+}

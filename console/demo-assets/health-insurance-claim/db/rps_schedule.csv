@@ -1,0 +1,6 @@
+cpt_code,provider_type,setting,unit_price
+99223,hospital,inpatient,3000
+99232,hospital,inpatient,1500
+71046,hospital,inpatient,400
+99213,clinic,outpatient,80
+99214,clinic,outpatient,120

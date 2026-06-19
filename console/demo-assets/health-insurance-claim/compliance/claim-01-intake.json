@@ -1,0 +1,7 @@
+[
+  {
+    "id": "InsClaims-PolicyDoc-§3",
+    "stage": "claim-01-intake",
+    "text": "Intake decision is binary. intake_accepted = true ⇒ rejection_reason = null AND missing_documents = []. Proof: B-output fields satisfy this implication."
+  }
+]

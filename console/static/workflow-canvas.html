@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solar Trust Gate — Upstage × GEM²</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/vendor/drawflow/drawflow.min.css">
+  <link rel="stylesheet" href="/workflow-canvas.css">
+</head>
+<body class="wf-page">
+
+  <!-- Gate: Cover / Pitch Page -->
+  <div id="gate-cover" class="gate-cover">
+    <div class="gate-content">
+      <div class="gate-logo">Upstage × GEM²</div>
+      <h1 class="gate-title">Solar Trust Gate</h1>
+      <p class="gate-subtitle">스스로 검증하는 Solar — Studio 파이프라인 틈새에 삽입되는 거버넌스 층</p>
+      <p class="gate-pitch"><strong>perception은 통계로 (Studio), judgment는 구조로 (Solar Trust Gate).</strong><br>
+        parse → classify → extract로 만들어진 사실을 Solar이 판정하고, 같은 Solar이 그 판정의 근거를 출처 문서에 독립 역추적한다.<br>
+        audit log가 "무엇이 실행됐나"라면, Solar Trust Gate는 "<strong>이 결정을 믿어도 되는가</strong>"에 답한다.</p>
+
+      <div class="gate-pipeline">
+        <span class="gp-chip"><span class="gp-icon">🔒</span><span class="gp-gate">L0</span><span class="gp-role">경계 게이트</span></span>
+        <span class="gp-arrow">▶</span>
+        <span class="gp-chip"><span class="gp-icon">🛡</span><span class="gp-gate">L1</span><span class="gp-role">사전조건 검증</span></span>
+        <span class="gp-arrow">▶</span>
+        <span class="gp-chip gp-f"><span class="gp-icon">☀️</span><span class="gp-gate">F</span><span class="gp-role">Solar 판정</span></span>
+        <span class="gp-arrow">▶</span>
+        <span class="gp-chip"><span class="gp-icon">🛡</span><span class="gp-gate">L2</span><span class="gp-role">근거 역추적 검증</span></span>
+        <span class="gp-arrow">▶</span>
+        <span class="gp-chip"><span class="gp-icon">🔒</span><span class="gp-gate">L3</span><span class="gp-role">경계 게이트</span></span>
+      </div>
+
+      <div class="gate-layers">
+        <div class="gate-layer">
+          <span class="gate-layer-icon">🔒</span>
+          <div>
+            <strong>L0 · L3 — 경계 게이트 (Boundary Gate, pure-Go)</strong>
+            <span class="gate-layer-desc">"안전한가?" — pure-Go regex DPI + 5 escalators. 주입·유출·자격증명 탈취를 ingress(L0)와 egress(L3) 양방향에서 &lt;1ms 차단.</span>
+          </div>
+        </div>
+        <div class="gate-layer">
+          <span class="gate-layer-icon">🛡</span>
+          <div>
+            <strong>L1 · L2 — Solar 자기검증</strong>
+            <span class="gate-layer-desc">L1: 입력 {TFC + A} 사전조건·완전성 경량 게이트. L2: 입력 {TFC + A + F출력} — F의 모든 인용근거를 앵커 A에 역추적, SPT 드리프트 Δe→∫de·EEF 인식 태그 ⊢⊨⊬⊥. <em>Solar Pro 3.</em></span>
+          </div>
+        </div>
+        <div class="gate-layer">
+          <span class="gate-layer-icon">☀️</span>
+          <div>
+            <strong>F — Solar 판정 (계약 기반 한국어 심사)</strong>
+            <span class="gate-layer-desc">A(추출 사실)만 근거로 판정 → {판정, 사유, 인용근거, 승인금액}. 워커도 검증자도 같은 Solar — 차이는 핸디캡이 아니라 구조 (독립 앵커 A + 좁은 감사 과제). <em>Solar Pro 3.</em></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="gate-auth">
+        <button id="gate-submit" class="gate-btn">콘솔 열기 →</button>
+      </div>
+
+      <p class="gate-footer">
+        <strong>Solar Trust Gate</strong> · GEM².AI × Upstage<br>
+        <span class="gate-team">david@gemsquared.ai</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Top bar ──────────────────────────────────────────────────────── -->
+  <header class="wf-header">
+    <div class="wf-brand">
+      <span class="wf-logo">Solar Trust Gate</span>
+      <span class="wf-tag">GEM².AI</span>
+    </div>
+
+    <div class="wf-title-block">
+      <input id="wf-title-input"
+             class="wf-title-input"
+             placeholder="Workflow title"
+             autocomplete="off">
+      <input id="wf-slug-input"
+             class="wf-slug-input"
+             placeholder="workflow-slug"
+             pattern="[a-z0-9][-a-z0-9]{0,62}[a-z0-9]"
+             autocomplete="off">
+    </div>
+
+    <div class="wf-actions">
+      <!-- WP-AO-41 scenario picker dropdown removed — judges inject custom
+           input via the CE viewer Save button on each node instead. -->
+      <!-- WP-AO-51: zoom controls. Always visible. Keyboard +/-/0 also wired. -->
+      <div class="wf-zoom-group" role="group" aria-label="Canvas zoom">
+        <button id="wf-zoom-out"   class="wf-btn wf-btn-ghost wf-btn-icon" title="Zoom out (−)">−</button>
+        <button id="wf-zoom-reset" class="wf-btn wf-btn-ghost wf-btn-icon" title="Reset zoom (0)">⊙</button>
+        <button id="wf-zoom-in"    class="wf-btn wf-btn-ghost wf-btn-icon" title="Zoom in (+)">+</button>
+      </div>
+      <!-- ⚡ Load demo project — one-click bootstrap of the 6-CE health-insurance-claim pipeline -->
+      <button id="btn-load-demo" class="btn-load-demo"
+              title="Pre-load the health-insurance-claim demo (6 CEs ready in one click)">⚡ Load demo project</button>
+      <!-- Primary actions stay visible — Run + Deploy are the CTAs -->
+      <button id="wf-run-btn"  class="wf-btn wf-btn-accent" title="Execute the workflow (L1/L2 audit per menu toggles)">▶ Run</button>
+      <button id="wf-deploy-btn" class="wf-deploy-btn" disabled
+              title="Run a test first to enable Deploy">Deploy now</button>
+      <button id="wf-audit-btn" class="wf-btn wf-audit-btn-cta" type="button"
+              title="Open the SQLite audit log — every L0/L1/L2/L3 verdict for this workflow">📋 Audit log</button>
+      <button id="lock-btn" class="lock-btn" type="button" title="Return to cover / lock the session">🔒 Lock</button>
+      <!-- Hamburger menu hidden 2026-05-19 — click handler unreliable in current
+           build. L1/L2 audit toggles + Load/Save are still wired in JS; they
+           default to enabled. Re-enable by removing style="display:none". -->
+      <div class="wf-menu-wrapper" style="display:none;">
+        <button id="wf-menu-btn" class="wf-btn wf-btn-ghost" title="More actions">☰</button>
+        <div id="wf-menu-dropdown" class="wf-menu-dropdown hidden" role="menu">
+          <button id="wf-load-btn" class="wf-menu-item" role="menuitem">📂 Load workflow</button>
+          <button id="wf-save-btn" class="wf-menu-item" role="menuitem">💾 Save workflow</button>
+          <hr class="wf-menu-divider">
+          <label class="wf-menu-item wf-menu-toggle" role="menuitemcheckbox"
+                 title="L1 P-check (precondition gate) before each CE invocation">
+            <input type="checkbox" id="wf-audit-l1-toggle" checked> 🛡 L1 audit
+          </label>
+          <label class="wf-menu-item wf-menu-toggle" role="menuitemcheckbox"
+                 title="L2 O-check (postcondition gate) after each CE invocation">
+            <input type="checkbox" id="wf-audit-l2-toggle" checked> 🛡 L2 audit
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- WP-AO-58 — workflow run progress bar (between header and body) -->
+  <div id="wf-progress" class="wf-progress hidden" role="progressbar"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div id="wf-progress-fill" class="wf-progress-fill"></div>
+  </div>
+
+  <!-- Main body — 3-column flexbox ─────────────────────────────────── -->
+  <main class="wf-body">
+
+    <!-- Palette sidebar -->
+    <aside class="wf-palette" id="wf-palette">
+      <div class="wf-palette-header">
+        <h3>CE Palette</h3>
+        <div class="wf-palette-header-right">
+          <button id="wf-palette-reload" class="wf-palette-reload-btn"
+                  title="Reload CE registry — picks up CEs created in Crafter tab">↻</button>
+          <span class="wf-palette-count" id="wf-palette-count">0</span>
+        </div>
+      </div>
+      <input id="wf-palette-search"
+             class="wf-palette-search"
+             placeholder="Search CEs…"
+             autocomplete="off">
+      <div id="wf-palette-list" class="wf-palette-list">
+        <div class="wf-palette-empty">Loading CE registry…</div>
+      </div>
+    </aside>
+
+    <!-- WP-AO-57 — horizontal splitter between palette and canvas -->
+    <div id="wf-splitter-palette" class="wf-splitter wf-splitter-h"
+         role="separator" aria-orientation="vertical"
+         title="Drag to resize palette"></div>
+
+    <!-- Canvas region — Drawflow mounts here -->
+    <section class="wf-canvas-wrap">
+      <div id="drawflow" class="wf-drawflow"></div>
+      <div id="wf-overlay" class="wf-overlay hidden">
+        <div class="wf-overlay-card">
+          <h2 id="wf-overlay-title">…</h2>
+          <p id="wf-overlay-message">…</p>
+          <button id="wf-overlay-dismiss" class="wf-btn wf-btn-accent">OK</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- WP-AO-57 — vertical splitter between canvas body and trace panel -->
+  <div id="wf-splitter-trace" class="wf-splitter wf-splitter-v"
+       role="separator" aria-orientation="horizontal"
+       title="Drag to resize trace panel"></div>
+
+  <!-- Bottom trace panel — collapsible ─────────────────────────────── -->
+  <aside class="wf-trace" id="wf-trace">
+    <div class="wf-trace-header" id="wf-trace-toggle">
+      <h3>Run Trace</h3>
+      <span class="wf-trace-meta" id="wf-trace-meta">no run yet</span>
+      <span class="wf-trace-chevron" id="wf-trace-chevron">▼</span>
+    </div>
+    <div class="wf-trace-body" id="wf-trace-body">
+      <div class="wf-trace-empty">Run the workflow to see L1 → CE → L2 audit chain.</div>
+    </div>
+    <div id="wf-trace-banner" class="wf-trace-banner hidden"></div>
+  </aside>
+
+  <!-- Toast container — created on demand by JS -->
+  <div id="wf-toasts" class="wf-toasts" aria-live="polite"></div>
+
+  <!-- WP-AO-51 per-node CE viewer modal (hidden by default).
+       Opens when user clicks a node in the canvas. Embeds the /ce-viewer
+       page in an iframe — full sample-prefilled, run-in-isolation UX.
+       Reuses the entire WP-AO-31 viewer page; zero new viewer code. -->
+  <div id="wf-ce-modal" class="wf-ce-modal hidden" role="dialog" aria-modal="true">
+    <div class="wf-ce-modal-card">
+      <button id="wf-ce-modal-close" class="wf-ce-modal-close" title="Close (Esc)">×</button>
+      <iframe id="wf-ce-modal-frame" class="wf-ce-modal-frame" title="CE viewer"></iframe>
+    </div>
+  </div>
+
+  <!-- One-time Field Manual popup (first visit only — localStorage gated) -->
+  <div id="wf-manual-modal" class="wf-manual-modal hidden" role="dialog" aria-modal="true" aria-label="Field manual">
+    <div class="wf-manual-modal-card">
+      <button id="wf-manual-modal-close" class="wf-manual-modal-close" title="Close (Esc)">×</button>
+      <div class="wf-manual-eyebrow">▶ Welcome</div>
+      <h3 class="wf-manual-modal-title">Watch the 1-minute field manual</h3>
+      <p class="wf-manual-modal-sub">A 67-second walkthrough — the canvas, the four-gate pipeline, the adversarial L0 DENY, and the SQLite audit log. Returning visitors won't see this again.</p>
+      <div class="wf-manual-video">
+        <iframe id="wf-manual-iframe"
+                src=""
+                title="GEM² field manual"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+      </div>
+      <div class="wf-manual-actions">
+        <a href="https://youtu.be/kjc4Pom9jfI" target="_blank" rel="noopener" id="wf-manual-watch" class="wf-btn wf-btn-accent">▶ Watch on YouTube</a>
+        <button id="wf-manual-skip" class="wf-btn wf-btn-ghost">Got it — skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WP-01 Audit Log modal — surfaces the SQLite layer_audit_log table -->
+  <div id="wf-audit-modal" class="wf-audit-modal hidden" role="dialog" aria-modal="true">
+    <div class="wf-audit-modal-card">
+      <button id="wf-audit-modal-close" class="wf-audit-modal-close" title="Close (Esc)">×</button>
+      <h3 class="wf-audit-modal-title">📋 Audit Log <span id="wf-audit-modal-wf"></span></h3>
+      <p class="wf-audit-modal-sub">Every L0/L1/L2/L3 verdict, persisted to <code>SQLite · layer_audit_log</code>. Regulator-readable.</p>
+
+      <div class="wf-audit-summary" id="wf-audit-summary">—</div>
+
+      <div class="wf-audit-controls">
+        <label>Layer
+          <select id="wf-audit-layer">
+            <option value="all">All</option>
+            <option value="L0">L0 — ingress</option>
+            <option value="L1">L1 — P-check</option>
+            <option value="L2">L2 — O-check</option>
+            <option value="L3">L3 — egress</option>
+          </select>
+        </label>
+        <label>Verdict
+          <select id="wf-audit-verdict">
+            <option value="all">All</option>
+            <option value="ALLOW">ALLOW</option>
+            <option value="LOG">LOG</option>
+            <option value="DENY">DENY</option>
+            <option value="SUCCESS">SUCCESS</option>
+            <option value="FAILURE">FAILURE</option>
+          </select>
+        </label>
+        <label>Limit
+          <select id="wf-audit-limit">
+            <option value="100">100</option>
+            <option value="200" selected>200</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+        </label>
+        <button id="wf-audit-refresh" class="wf-btn wf-btn-accent">↻ Refresh</button>
+        <span id="wf-audit-status" class="wf-audit-status"></span>
+      </div>
+
+      <div class="wf-audit-table-wrap">
+        <table class="wf-audit-table">
+          <thead>
+            <tr>
+              <th>ts</th>
+              <th>ce_slug</th>
+              <th>layer</th>
+              <th>verdict</th>
+              <th>risk</th>
+              <th>matched_rule</th>
+              <th>message</th>
+            </tr>
+          </thead>
+          <tbody id="wf-audit-tbody">
+            <tr><td colspan="7" class="wf-audit-empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- WP-01 U5 Layer popup modal — opens on chip click when verdict ∈ {DENY, LOG} -->
+  <div id="wf-layer-modal" class="wf-layer-modal hidden" role="dialog" aria-modal="true">
+    <div class="wf-layer-modal-card">
+      <button id="wf-layer-modal-close" class="wf-layer-modal-close" title="Close (Esc)">×</button>
+      <h3 id="wf-layer-modal-title" class="wf-layer-modal-title">Layer L0 — ALLOW</h3>
+      <div id="wf-layer-modal-summary" class="wf-layer-modal-summary"></div>
+      <details class="wf-layer-modal-details">
+        <summary>Detailed payload</summary>
+        <pre id="wf-layer-modal-payload" class="wf-layer-modal-payload"></pre>
+      </details>
+    </div>
+  </div>
+
+  <!-- WP-AO-39 Deploy collision modal (hidden by default) -->
+  <div id="wf-deploy-modal" class="wf-deploy-modal hidden" role="dialog" aria-modal="true">
+    <div class="wf-deploy-modal-card">
+      <h3 id="wf-deploy-modal-title">Workflow already deployed</h3>
+      <p id="wf-deploy-modal-body" class="wf-deploy-modal-body"></p>
+      <div class="wf-deploy-modal-actions">
+        <button id="wf-deploy-modal-overwrite" class="wf-btn wf-btn-danger">Overwrite existing</button>
+        <button id="wf-deploy-modal-alt"       class="wf-btn wf-btn-accent">Deploy as new slug</button>
+        <button id="wf-deploy-modal-cancel"    class="wf-btn wf-btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WP-AO-39 Deploy success card (replaces toast for actionable result) -->
+  <div id="wf-deploy-success" class="wf-deploy-success hidden">
+    <h3>✓ Workflow deployed</h3>
+    <p>Public URL:</p>
+    <a id="wf-deploy-success-url" class="wf-deploy-success-link" target="_blank" rel="noopener"></a>
+    <div class="wf-deploy-success-actions">
+      <button id="wf-deploy-success-copy"  class="wf-btn wf-btn-ghost">Copy URL</button>
+      <button id="wf-deploy-success-open"  class="wf-btn wf-btn-accent">Open in new tab</button>
+      <button id="wf-deploy-success-close" class="wf-btn wf-btn-ghost">Close</button>
+    </div>
+  </div>
+
+  <!-- Drawflow + canvas glue -->
+  <script src="/vendor/drawflow/drawflow.min.js"></script>
+  <script>
+    // TEST FIELD auth boot — sessionStorage > ?key= URL param > gate-cover prompt.
+    // The TechEX demo key is auto-submitted on Enter Console click; on success we
+    // reload so workflow-canvas.js sees a populated WF_AUTH_KEY at module-eval time.
+    window.TECHEX_DEMO_KEY = 'G0ZWD5U741xThIGD6JBcx5Y52vLEnHu';
+
+    (function authBoot() {
+      const saved = sessionStorage.getItem('aio-key') || localStorage.getItem('aio-key');
+      if (saved) {
+        window.WF_AUTH_KEY = saved;
+        return; // gate-cover hidden on DOMContentLoaded below
+      }
+      const params = new URLSearchParams(window.location.search);
+      const keyParam = params.get('key');
+      if (keyParam) {
+        window.WF_AUTH_KEY = keyParam;
+        sessionStorage.setItem('aio-key', keyParam);
+        localStorage.setItem('aio-key', keyParam);
+        return;
+      }
+      // No key — gate-cover stays visible; Enter Console click handler authenticates.
+    })();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const gate = document.getElementById('gate-cover');
+      const submitBtn = document.getElementById('gate-submit');
+      const lockBtn = document.getElementById('lock-btn');
+
+      // Hide gate immediately if we already have an auth key
+      if (window.WF_AUTH_KEY && gate) gate.classList.add('hidden');
+
+      if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Loading…';
+          try {
+            const res = await fetch('/api/auth', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: window.TECHEX_DEMO_KEY })
+            });
+            if (res.ok) {
+              sessionStorage.setItem('aio-key', window.TECHEX_DEMO_KEY);
+              localStorage.setItem('aio-key', window.TECHEX_DEMO_KEY);
+              // Reload so workflow-canvas.js can boot with the key set.
+              window.location.reload();
+            } else {
+              submitBtn.textContent = 'Auth failed — refresh page';
+            }
+          } catch (e) {
+            submitBtn.textContent = 'Network error — refresh page';
+          }
+        });
+      }
+
+      if (lockBtn) {
+        lockBtn.addEventListener('click', () => {
+          sessionStorage.removeItem('aio-key');
+          localStorage.removeItem('aio-key');
+          window.location.reload();
+        });
+      }
+
+      // ── One-time Field Manual popup ─────────────────────────────
+      // Show only when the user is past the gate AND has never seen it.
+      // localStorage key 'techex-manual-shown' persists across visits +
+      // tabs. 'Lock' also clears the key (localStorage.removeItem above
+      // doesn't clear it — separate localStorage namespace).
+      function maybeShowManualModal() {
+        if (!window.WF_AUTH_KEY) return;          // not authed yet
+        if (localStorage.getItem('techex-manual-shown') === '1') return;
+        const modal = document.getElementById('wf-manual-modal');
+        const iframe = document.getElementById('wf-manual-iframe');
+        const skip  = document.getElementById('wf-manual-skip');
+        const closeBtn = document.getElementById('wf-manual-modal-close');
+        const watchBtn = document.getElementById('wf-manual-watch');
+        if (!modal || !iframe) return;
+        // Lazy-set src so YouTube only loads when modal opens (saves bandwidth)
+        iframe.src = 'https://www.youtube.com/embed/kjc4Pom9jfI?autoplay=0&rel=0';
+        modal.classList.remove('hidden');
+        function dismiss() {
+          modal.classList.add('hidden');
+          iframe.src = '';                         // stop video
+          localStorage.setItem('techex-manual-shown', '1');
+        }
+        skip ?.addEventListener('click', dismiss, { once: true });
+        closeBtn?.addEventListener('click', dismiss, { once: true });
+        watchBtn?.addEventListener('click', () => {
+          // user clicked Watch on YouTube — still mark as shown so they
+          // aren't pestered next visit
+          localStorage.setItem('techex-manual-shown', '1');
+        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) dismiss(); });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && !modal.classList.contains('hidden')) dismiss();
+        });
+      }
+      // DISABLED: welcome popup hidden for demo (re-enable by removing the return below)
+      // setTimeout(maybeShowManualModal, 400);
+    });
+  </script>
+  <script src="/workflow-canvas.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "claim_reference_draft": "DRAFT-20260518-00001",
+  "policy_no": "HIC-2026-12345",
+  "claimant_name": "Ah Beng Tan",
+  "claim_type": "hospitalisation",
+  "incident_date": "2026-05-15",
+  "claim_amount_requested": 8500.00,
+  "eligible": true,
+  "eligibility_failure_reason": null,
+  "claim_type_covered": true,
+  "waiting_period_satisfied": true,
+  "waiting_period_days": 30,
+  "annual_limit": 100000,
+  "annual_utilised": 0,
+  "annual_limit_remaining": 100000,
+  "per_claim_limit": 50000,
+  "claimable_ceiling": 8500.00,
+  "eligibility_timestamp": "2026-05-18T10:02:00+08:00"
+}

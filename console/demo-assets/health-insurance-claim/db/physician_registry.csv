@@ -1,0 +1,4 @@
+physician_license_no,physician_name,specialty,status,expiry_date
+MCR-12345A,Dr. Lim Wei Ming,internal_medicine,active,2027-06-30
+MCR-67890B,Dr. Sarah Chen,general_surgery,active,2027-12-31
+MCR-11111C,Dr. Rajesh Kumar,pediatrics,active,2027-04-30

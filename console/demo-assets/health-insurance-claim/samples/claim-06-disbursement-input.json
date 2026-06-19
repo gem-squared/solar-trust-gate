@@ -1,0 +1,17 @@
+{
+  "claim_reference_draft": "DRAFT-20260518-00001",
+  "policy_no": "HIC-2026-12345",
+  "claimant_name": "Ah Beng Tan",
+  "claim_type": "hospitalisation",
+  "net_payable": 7200.00,
+  "adjudication_status": "approved",
+  "claimant_liability": 1300.00,
+  "adjudication_notes": "GOLD plan; in-panel; deductible 500, co-pay 10%, no co-insurance.",
+  "payment_details": {
+    "payment_mode": "direct_credit",
+    "bank_name": "DBS Bank",
+    "bank_account_no": "1234567890",
+    "bank_branch_code": "020",
+    "payee_name": "Ah Beng Tan"
+  }
+}

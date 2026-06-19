@@ -1,0 +1,6 @@
+code,description,status
+99223,Initial hospital care comprehensive,active
+99232,Subsequent hospital care moderate,active
+99213,Office visit established patient,active
+99214,Office visit established patient detailed,active
+71046,Chest X-ray two views,active
